@@ -1,0 +1,42 @@
+name "sonar_driver"
+version "0.1"
+
+#Checkt Package Config nach include pfaden (hier z.B. Sonar.h
+import_types_from "SonarTypes.hpp"
+import_types_from "SonarConfigTypes.hpp"
+
+#Er linkt gegen die lib...
+using_library "micron"
+#using_library "avalontools"
+
+task_context "SonarDriverMicronTask" do
+	#	 Name Frei belibig, Namespace::Objekt
+	input_port("SonarConfig","sensorConfig::SonarConfig").
+		doc "Configuration Values for Sonar"
+
+	output_port("SonarScan","sensorData::Sonar").
+		doc "Transmitting Sonar Data"
+    
+	property('port', '/std/string', "").
+        doc 'the device port'
+	
+	port_driven:SonarConfig
+	#needs_configuration #es musst zunächst der configureHook auferufen werden
+
+end
+
+deployment "sonar_driver_micron_task_application" do
+	bla = task("SonarDriverMicronTask","SonarDriverMicronTask").
+		periodic(0.01)
+	bla.port = "/dev/ttyUSB0"
+	bla.start
+	#triggered #nur wenn nur wenn daten aufrufen
+	#
+	add_default_logger
+
+	#hängt nen task browser an (Was auch immer tolles)	
+	if !corba_enabled?
+		browse bla
+	end
+end
+
