@@ -1,21 +1,19 @@
-#include "micron.hpp"
+#include "SonarDriverMicronTask.hpp"
 
 #include <rtt/NonPeriodicActivity.hpp>
+
 #include <QObject>
 #include <SonarInterface.h>
 
+using namespace sonar_driver;
 
 
-using namespace sonar;
-        
-		
-
-RTT::NonPeriodicActivity* micron::getNonPeriodicActivity()
+RTT::NonPeriodicActivity* SonarDriverMicronTask::getNonPeriodicActivity()
 { return dynamic_cast< RTT::NonPeriodicActivity* >(getActivity().get()); }
 
 
-micron::micron(std::string const& name, TaskCore::TaskState initial_state)
-    : micronBase(name, initial_state),
+SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name, TaskCore::TaskState initial_state)
+    : SonarDriverMicronTaskBase(name, initial_state),
     file(QString("scan-data-%1.txt").arg(time(0))),
     stream(&file)
 {
@@ -31,20 +29,19 @@ micron::micron(std::string const& name, TaskCore::TaskState initial_state)
 
 
 /// The following lines are template definitions for the various state machine
-// hooks defined by Orocos::RTT. See micron.hpp for more detailed
+// hooks defined by Orocos::RTT. See SonarDriverMicronTask.hpp for more detailed
 // documentation about them.
 
-// bool micron::configureHook()
+// bool SonarDriverMicronTask::configureHook()
 // {
 //     return true;
 // }
-bool micron::startHook()
-{
-     printf("Starting...\n");
-     return true;
- }
+// bool SonarDriverMicronTask::startHook()
+// {
+//     return true;
+// }
 
-void micron::updateHook(std::vector<RTT::PortInterface*> const& updated_ports)
+void SonarDriverMicronTask::updateHook(std::vector<RTT::PortInterface*> const& updated_ports)
 {
 	if(app==0){
 		char **b;
@@ -100,11 +97,12 @@ void micron::updateHook(std::vector<RTT::PortInterface*> const& updated_ports)
 	app->processEvents();
 
 }
-void micron::newDepthReady(float value){
+
+void SonarDriverMicronTask::newDepthReady(float value){
 	depth = value;	
 }
 
-void micron::scanFinished(SonarScan *scan){
+void SonarDriverMicronTask::scanFinished(SonarScan *scan){
 	sensorData::Sonar data;
 	data.packedSize = scan->getpackedSize();
 	data.deviceType = scan->getdeviceType();
@@ -140,14 +138,13 @@ void micron::scanFinished(SonarScan *scan){
 }
 
 
-// void micron::errorHook()
+// void SonarDriverMicronTask::errorHook()
 // {
 // }
-void micron::stopHook()
-{
-     printf("Stopping...\n");
-}
-/// void micron::cleanupHook()
+// void SonarDriverMicronTask::stopHook()
+// {
+// }
+// void SonarDriverMicronTask::cleanupHook()
 // {
 // }
 

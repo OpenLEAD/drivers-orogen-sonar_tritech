@@ -1,7 +1,7 @@
-#ifndef SONAR_MICRON_TASK_HPP
-#define SONAR_MICRON_TASK_HPP
+#ifndef SONAR_DRIVER_SONARDRIVERMICRONTASK_TASK_HPP
+#define SONAR_DRIVER_SONARDRIVERMICRONTASK_TASK_HPP
 
-#include "sonar/micronBase.hpp"
+#include "sonar_driver/SonarDriverMicronTaskBase.hpp"
 #include <QObject>
 #include <QCoreApplication>
 #include <QFile>
@@ -16,17 +16,16 @@ namespace RTT
 }
 
 
-namespace sonar {
-    class micron : public QObject, public micronBase
+namespace sonar_driver {
+    class SonarDriverMicronTask : public QObject, public SonarDriverMicronTaskBase
     {
-    Q_OBJECT
-	friend class micronBase;
+	friend class SonarDriverMicronTaskBase;
     protected:
     
     
 
     public:
-        micron(std::string const& name = "sonar::micron", TaskCore::TaskState initial_state = Stopped);
+        SonarDriverMicronTask(std::string const& name = "sonar_driver::SonarDriverMicronTask", TaskCore::TaskState initial_state = Stopped);
 
         RTT::NonPeriodicActivity* getNonPeriodicActivity();
 
@@ -50,7 +49,7 @@ namespace sonar {
          * stay in Stopped. Otherwise, it goes into Running and updateHook()
          * will be called.
          */
-         bool startHook();
+        // bool startHook();
 
         /** This hook is called by Orocos when the component is in the Running
          * state, at each activity step. Here, the activity gives the "ticks"
@@ -85,22 +84,22 @@ namespace sonar {
         /** This hook is called by Orocos when the state machine transitions
          * from Running to Stopped after stop() has been called.
          */
-         void stopHook();
+        // void stopHook();
 
         /** This hook is called by Orocos when the state machine transitions
          * from Stopped to PreOperational, requiring the call to configureHook()
          * before calling start() again.
          */
         // void cleanupHook();
-		private:
-			QCoreApplication *app;
-			QFile file;
-			QDataStream stream;
-			SonarInterface *sonar;
-			float depth;
-		public slots:
-			void scanFinished(SonarScan *scan);
-			void newDepthReady(float value);
+	private:
+		QCoreApplication *app;
+		QFile file;
+		QDataStream stream;
+		SonarInterface *sonar;
+		float depth;
+	public slots:
+		void scanFinished(SonarScan *scan);
+		void newDepthReady(float value);
     };
 }
 
