@@ -32,7 +32,6 @@ namespace sensorData
 		uint8_t steps;
 		uint16_t bearing;
 		uint16_t dataBytes;
-		float depth;
 		std::vector<uint8_t> scanData;
 	};
 

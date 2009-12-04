@@ -4,6 +4,7 @@ version "0.1"
 #Checkt Package Config nach include pfaden (hier z.B. Sonar.h
 import_types_from "SonarTypes.hpp"
 import_types_from "SonarConfigTypes.hpp"
+import_types_from "GroundDistanceReading.hpp"
 
 #Er linkt gegen die lib...
 using_library "micron"
@@ -16,6 +17,9 @@ task_context "SonarDriverMicronTask" do
 
 	output_port("SonarScan","sensorData::Sonar").
 		doc "Transmitting Sonar Data"
+	
+	output_port("CurrentGroundDistance","sensorData::GroundDistanceReading").
+		doc "Current Ground Distance"
     
 	property('port', '/std/string', "").
         doc 'the device port'

@@ -104,6 +104,7 @@ void SonarDriverMicronTask::newDepthReady(float value){
 
 void SonarDriverMicronTask::scanFinished(SonarScan *scan){
 	sensorData::Sonar data;
+	sensorData::GroundDistanceReading groundData;
 	data.packedSize = scan->getpackedSize();
 	data.deviceType = scan->getdeviceType();
 	data.headStatus = scan->getheadStatus();
@@ -123,11 +124,12 @@ void SonarDriverMicronTask::scanFinished(SonarScan *scan){
 	data.bearing	= scan->getbearing();
 	data.dataBytes	= scan->getdataBytes();
 	data.scanData.reserve(data.dataBytes);
-	data.depth	= depth;
 	for(int i=0;i<data.dataBytes;i++){
 		data.scanData.push_back(scan->getScanData()[i]);
 	}
-
+	
+	groundData.depth	= depth;
+	_CurrentGroundDistance.write(groundData);
 	_SonarScan.write(data);
     
 	stream << *scan;
