@@ -54,6 +54,7 @@ void SonarDriverMicronTask::updateHook(std::vector<RTT::PortInterface*> const& u
 		app = new QCoreApplication(*i,b);
 		sonar = new SonarInterface(_port.value().c_str());
 		sonar->start();
+		app->processEvents();
 		connect(sonar,SIGNAL(scanComplete(SonarScan*)),this,SLOT(scanFinished(SonarScan*)),Qt::DirectConnection);
 		connect(sonar,SIGNAL(newDepth(float)),this,SLOT(newDepthReady(float)),Qt::DirectConnection);
 	}

@@ -19,6 +19,7 @@ namespace RTT
 namespace sonar_driver {
     class SonarDriverMicronTask : public QObject, public SonarDriverMicronTaskBase
     {
+    Q_OBJECT
 	friend class SonarDriverMicronTaskBase;
     protected:
     
