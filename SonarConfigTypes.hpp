@@ -2,6 +2,7 @@
 #define SONARCONFIGTYPES_H
 
 #include <inttypes.h>
+#include <dfki/time.h>
 
 namespace sensorConfig
 {
@@ -9,6 +10,7 @@ namespace sensorConfig
 #ifndef __orogen
 
 #endif
+    DFKI::Time stamp;
     bool adc8on;
     bool cont;
     bool scanright;

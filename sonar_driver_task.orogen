@@ -2,6 +2,7 @@ name "sonar_driver"
 version "0.1"
 
 #Checkt Package Config nach include pfaden (hier z.B. Sonar.h
+import_types_from "dfki"
 import_types_from "SonarTypes.hpp"
 import_types_from "SonarConfigTypes.hpp"
 import_types_from "GroundDistanceReading.hpp"

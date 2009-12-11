@@ -130,7 +130,9 @@ void SonarDriverMicronTask::scanFinished(SonarScan *scan){
 	}
 	
 	groundData.depth	= depth;
+	groundData.stamp.now();
 	_CurrentGroundDistance.write(groundData);
+	data.stamp.now();
 	_SonarScan.write(data);
     
 	stream << *scan;
