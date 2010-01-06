@@ -2,7 +2,7 @@
 
 #include <rtt/NonPeriodicActivity.hpp>
 
-#include <QObject>
+//#include <QObject>
 #include <SonarInterface.h>
 
 using namespace sonar_driver;
@@ -11,16 +11,21 @@ using namespace sonar_driver;
 RTT::NonPeriodicActivity* SonarDriverMicronTask::getNonPeriodicActivity()
 { return dynamic_cast< RTT::NonPeriodicActivity* >(getActivity().get()); }
 
+char* SonarDriverMicronTask::getLoggerFileName(){
+	char tmp[100];
+	sprintf(tmp,"scan-data-%i.txt",(int)time(0));
+	return tmp;
+}
 
 SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name, TaskCore::TaskState initial_state)
     : SonarDriverMicronTaskBase(name, initial_state),
-    file(QString("scan-data-%1.txt").arg(time(0))),
-    stream(&file)
+    //file(QString("scan-data-%1.txt").arg(time(0))),
+    stream(SonarDriverMicronTask::getLoggerFileName())
 {
-    file.open(QIODevice::WriteOnly | QIODevice::Unbuffered);
-    stream.setDevice(&file);
+//    file.open(QIODevice::WriteOnly | QIODevice::Unbuffered);
+ //   stream.setDevice(&file);
 	sonar =0;
-	app=0;
+//	app=0;
 	depth = -999;
 }
 
@@ -32,10 +37,12 @@ SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name, TaskCore::
 // hooks defined by Orocos::RTT. See SonarDriverMicronTask.hpp for more detailed
 // documentation about them.
 
-// bool SonarDriverMicronTask::configureHook()
-// {
-//     return true;
-// }
+bool SonarDriverMicronTask::configureHook()
+{
+	sonar = new SonarInterface(_port.value().c_str());
+	sonar->start();
+	return true;
+}
 // bool SonarDriverMicronTask::startHook()
 // {
 //     return true;
@@ -43,23 +50,6 @@ SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name, TaskCore::
 
 void SonarDriverMicronTask::updateHook(std::vector<RTT::PortInterface*> const& updated_ports)
 {
-	if(app==0){
-		char **b;
-		b = new char*[1];
-		b[0] = new char[2];
-		b[0][0]='T';
-		b[0][1]=0;
-		int *i= new int;
-		i[0] = 1;
-		app = new QCoreApplication(*i,b);
-		sonar = new SonarInterface(_port.value().c_str());
-		sonar->start();
-		app->processEvents();
-		connect(sonar,SIGNAL(scanComplete(SonarScan*)),this,SLOT(scanFinished(SonarScan*)),Qt::DirectConnection);
-		connect(sonar,SIGNAL(newDepth(float)),this,SLOT(newDepthReady(float)),Qt::DirectConnection);
-	}
-	
-	app->processEvents();
 	
 	if(!updated_ports.empty()){
 		if(isPortUpdated(_SonarConfig)){
@@ -94,16 +84,13 @@ void SonarDriverMicronTask::updateHook(std::vector<RTT::PortInterface*> const& u
 			printf("Sonar config is not updated, but what else?\n");
 		}
 	}
-
-	app->processEvents();
-
 }
 
-void SonarDriverMicronTask::newDepthReady(float value){
+void SonarDriverMicronTask::processDepth(const double value){
 	depth = value;	
 }
 
-void SonarDriverMicronTask::scanFinished(SonarScan *scan){
+void SonarDriverMicronTask::processSonarScan(SonarScan *scan){
 	sensorData::Sonar data;
 	sensorData::GroundDistanceReading groundData;
 	data.packedSize = scan->getpackedSize();
@@ -136,8 +123,8 @@ void SonarDriverMicronTask::scanFinished(SonarScan *scan){
 	_SonarScan.write(data);
     
 	stream << *scan;
-	file.waitForBytesWritten(0);
- 	file.flush();
+	//file.waitForBytesWritten(0);
+ 	//file.flush();
 	
 	delete scan;
 }

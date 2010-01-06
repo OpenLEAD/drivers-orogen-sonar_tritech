@@ -1,15 +1,6 @@
 include(sonar_driverTaskLib)
 
-qt4_automoc(
-	SonarDriverMicronTask.cpp
-)
-
-QT4_WRAP_CPP(sonar_qt_header
-	SonarDriverMicronTask.hpp
-)
-
 ADD_LIBRARY(${SONAR_DRIVER_TASKLIB_NAME} SHARED 
-	${sonar_qt_header}
 	${SONAR_DRIVER_TASKLIB_SOURCES}
 )
 

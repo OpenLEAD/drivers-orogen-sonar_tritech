@@ -2,12 +2,14 @@
 #define SONAR_DRIVER_SONARDRIVERMICRONTASK_TASK_HPP
 
 #include "sonar_driver/SonarDriverMicronTaskBase.hpp"
-#include <QObject>
-#include <QCoreApplication>
-#include <QFile>
-#include <QDataStream>
+//#include <QObject>
+//#include <QCoreApplication>
+//#include <QFile>
+//#include <QDataStream>
+#include <fstream>
+#include <SonarInterface.h>
 
-class SonarInterface;
+//class SonarInterface;
 class SonarScan;
 
 namespace RTT
@@ -17,16 +19,17 @@ namespace RTT
 
 
 namespace sonar_driver {
-    class SonarDriverMicronTask : public QObject, public SonarDriverMicronTaskBase
+    class SonarDriverMicronTask : public SonarHandler, public SonarDriverMicronTaskBase
     {
-    Q_OBJECT
-	friend class SonarDriverMicronTaskBase;
+    friend class SonarDriverMicronTaskBase;
     protected:
     
     
 
     public:
         SonarDriverMicronTask(std::string const& name = "sonar_driver::SonarDriverMicronTask", TaskCore::TaskState initial_state = Stopped);
+	
+	static char* getLoggerFileName();
 
         RTT::NonPeriodicActivity* getNonPeriodicActivity();
 
@@ -43,7 +46,7 @@ namespace sonar_driver {
          *     ...
          *   end
          */
-        // bool configureHook();
+         bool configureHook();
 
         /** This hook is called by Orocos when the state machine transitions
          * from Stopped to Running. If it returns false, then the component will
@@ -93,14 +96,14 @@ namespace sonar_driver {
          */
         // void cleanupHook();
 	private:
-		QCoreApplication *app;
-		QFile file;
-		QDataStream stream;
+		std::fstream stream;
 		SonarInterface *sonar;
 		float depth;
-	public slots:
-		void scanFinished(SonarScan *scan);
-		void newDepthReady(float value);
+		void processDepth(const double depth);
+		void processSonarScan(SonarScan* scan);
+//	public slots:
+//		void scanFinished(SonarScan *scan);
+//		void newDepthReady(float value);
     };
 }
 
