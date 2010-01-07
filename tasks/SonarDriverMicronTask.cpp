@@ -41,6 +41,7 @@ bool SonarDriverMicronTask::configureHook()
 {
 	sonar = new SonarInterface(_port.value().c_str());
 	sonar->start();
+	sonar->registerHandler(this);
 	return true;
 }
 // bool SonarDriverMicronTask::startHook()

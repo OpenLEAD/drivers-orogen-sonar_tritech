@@ -33,8 +33,6 @@ end
 deployment "sonar_driver_micron_task_application" do
 	bla = task("SonarDriverMicronTask","SonarDriverMicronTask").
 		periodic(0.01)
-	#bla.port = "/dev/ttyUSB0"
-	#bla.start
 	#triggered #nur wenn nur wenn daten aufrufen
 	#
 	add_default_logger
