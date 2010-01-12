@@ -1,12 +1,12 @@
 #ifndef GROUNDDISTANCEREADING_H
 #define GROUNDDISTANCEREADING_H
 
-#include <dfki/time.h>
+#include <base/time.h>
 
 namespace sensorData
 {
 	struct GroundDistanceReading{
-		DFKI::Time stamp;
+		base::Time stamp;
 		double depth;
 	};
 

@@ -2,7 +2,7 @@
 #define SONARTYPES_H
 
 #include <inttypes.h>
-#include <dfki/time.h>
+#include <base/time.h>
 
 #ifndef __orogen
 #include <vector>
@@ -15,7 +15,7 @@ namespace sensorData
 #ifndef __orogen
 
 #endif
-		DFKI::Time stamp;
+		base::Time stamp;
 		uint16_t packedSize;
 		uint8_t deviceType;
 		uint8_t headStatus;

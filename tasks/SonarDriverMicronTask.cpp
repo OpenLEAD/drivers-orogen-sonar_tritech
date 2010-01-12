@@ -2,7 +2,6 @@
 
 #include <rtt/NonPeriodicActivity.hpp>
 
-//#include <QObject>
 #include <SonarInterface.h>
 
 using namespace sonar_driver;
@@ -19,13 +18,9 @@ char* SonarDriverMicronTask::getLoggerFileName(){
 
 SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name, TaskCore::TaskState initial_state)
     : SonarDriverMicronTaskBase(name, initial_state),
-    //file(QString("scan-data-%1.txt").arg(time(0))),
     stream(SonarDriverMicronTask::getLoggerFileName())
 {
-//    file.open(QIODevice::WriteOnly | QIODevice::Unbuffered);
- //   stream.setDevice(&file);
 	sonar =0;
-//	app=0;
 	depth = -999;
 }
 
@@ -39,8 +34,9 @@ SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name, TaskCore::
 
 bool SonarDriverMicronTask::configureHook()
 {
-	sonar = new SonarInterface(_port.value().c_str());
-	sonar->start();
+	sonar = new SonarInterface();
+	sonar->init(_port.value().c_str());
+//	sonar->start();
 	sonar->registerHandler(this);
 	return true;
 }
