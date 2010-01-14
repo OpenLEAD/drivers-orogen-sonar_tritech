@@ -8,13 +8,14 @@
 //#include <QDataStream>
 #include <fstream>
 #include <SonarInterface.h>
+#include <string>
 
 //class SonarInterface;
 class SonarScan;
 
 namespace RTT
 {
-    class NonPeriodicActivity;
+    class FileDescriptorActivity;
 }
 
 
@@ -27,11 +28,11 @@ namespace sonar_driver {
     
 
     public:
-        SonarDriverMicronTask(std::string const& name = "sonar_driver::SonarDriverMicronTask", TaskCore::TaskState initial_state = Stopped);
+        SonarDriverMicronTask(std::string const& name = "sonar_driver::SonarDriverMicronTask");
 	
-	static char* getLoggerFileName();
+	static std::string getLoggerFileName();
 
-        RTT::NonPeriodicActivity* getNonPeriodicActivity();
+        RTT::FileDescriptorActivity* getFileDescriptorActivity();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the

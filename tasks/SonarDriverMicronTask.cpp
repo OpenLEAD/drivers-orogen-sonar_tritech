@@ -1,24 +1,24 @@
 #include "SonarDriverMicronTask.hpp"
 
-#include <rtt/NonPeriodicActivity.hpp>
+#include <rtt/FileDescriptorActivity.hpp>
 
 #include <SonarInterface.h>
 
 using namespace sonar_driver;
 
 
-RTT::NonPeriodicActivity* SonarDriverMicronTask::getNonPeriodicActivity()
-{ return dynamic_cast< RTT::NonPeriodicActivity* >(getActivity().get()); }
+RTT::FileDescriptorActivity* SonarDriverMicronTask::getFileDescriptorActivity()
+{ return dynamic_cast< RTT::FileDescriptorActivity* >(getActivity().get()); }
 
-char* SonarDriverMicronTask::getLoggerFileName(){
+std::string SonarDriverMicronTask::getLoggerFileName(){
 	char tmp[100];
 	sprintf(tmp,"scan-data-%i.txt",(int)time(0));
-	return tmp;
+	return std::string(tmp);
 }
 
-SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name, TaskCore::TaskState initial_state)
-    : SonarDriverMicronTaskBase(name, initial_state),
-    stream(SonarDriverMicronTask::getLoggerFileName())
+SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name)
+    : SonarDriverMicronTaskBase(name),
+    stream(SonarDriverMicronTask::getLoggerFileName().c_str())
 {
 	sonar =0;
 	depth = -999;
@@ -35,9 +35,21 @@ SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name, TaskCore::
 bool SonarDriverMicronTask::configureHook()
 {
 	sonar = new SonarInterface();
-	sonar->init(_port.value().c_str());
+	if(sonar->init(_port.value().c_str())){
+		if(getFileDescriptorActivity() == 0){
+	                fprintf(stderr,"Cannot use File Descriptor Activity, did you use periodic?\n");
+	                return false;
+            	}else{
+			printf("Watching File descriptor for Sonar: %i\n",sonar->getReadFD());
+			getFileDescriptorActivity()->watch(sonar->getReadFD());
+		}
+	}else{
+		fprintf(stderr,"Cannot initialze Micron Driver on Port %s, going to error state...\n",_port.value().c_str());
+		return false;
+	}
 //	sonar->start();
 	sonar->registerHandler(this);
+
 	return true;
 }
 // bool SonarDriverMicronTask::startHook()
@@ -81,6 +93,7 @@ void SonarDriverMicronTask::updateHook(std::vector<RTT::PortInterface*> const& u
 			printf("Sonar config is not updated, but what else?\n");
 		}
 	}
+	sonar->processSerialData();	
 }
 
 void SonarDriverMicronTask::processDepth(const double value){

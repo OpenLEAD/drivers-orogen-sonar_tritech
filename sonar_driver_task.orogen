@@ -27,7 +27,7 @@ task_context "SonarDriverMicronTask" do
 	
 	port_driven:SonarConfig
 	#needs_configuration #es musst zunächst der configureHook auferufen werden
-
+	fd_driven
 end
 
 deployment "sonar_driver_micron_task_application" do
