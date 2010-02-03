@@ -10,18 +10,19 @@ using namespace sonar_driver;
 RTT::FileDescriptorActivity* SonarDriverMicronTask::getFileDescriptorActivity()
 { return dynamic_cast< RTT::FileDescriptorActivity* >(getActivity().get()); }
 
-std::string SonarDriverMicronTask::getLoggerFileName(){
+std::string SonarDriverMicronTask::getLoggerFileName(const char *comment){
 	char tmp[100];
-	sprintf(tmp,"scan-data-%i.txt",(int)time(0));
+	sprintf(tmp,"scan-data-%i-%s.txt",(int)time(0),comment);
 	return std::string(tmp);
 }
 
 SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name)
     : SonarDriverMicronTaskBase(name),
-    stream(SonarDriverMicronTask::getLoggerFileName().c_str())
+    stream(SonarDriverMicronTask::getLoggerFileName(_logComment.value().c_str()).c_str())
 {
 	sonar =0;
 	depth = -999;
+	doLogging=false;
 }
 
 
@@ -47,8 +48,11 @@ bool SonarDriverMicronTask::configureHook()
 		fprintf(stderr,"Cannot initialze Micron Driver on Port %s, going to error state...\n",_port.value().c_str());
 		return false;
 	}
-//	sonar->start();
 	sonar->registerHandler(this);
+
+	if(doLogging && !stream.is_open()){
+		return false;
+	}
 
 	return true;
 }
@@ -59,7 +63,17 @@ bool SonarDriverMicronTask::configureHook()
 
 void SonarDriverMicronTask::updateHook(std::vector<RTT::PortInterface*> const& updated_ports)
 {
-	
+	//Check Loggin System:
+	if(doLogging != _doLogging){
+		doLogging = _doLogging;
+		if(!doLogging){
+			stream.close();
+		}else{
+    		stream.open(SonarDriverMicronTask::getLoggerFileName(_logComment.value().c_str()).c_str());
+		}
+	}
+
+
 	if(!updated_ports.empty()){
 		if(isPortUpdated(_SonarConfig)){
 			sensorConfig::SonarConfig data;
@@ -131,10 +145,9 @@ void SonarDriverMicronTask::processSonarScan(SonarScan *scan){
 	_CurrentGroundDistance.write(groundData);
 	data.stamp.now();
 	_SonarScan.write(data);
-    
-	stream << *scan;
-	//file.waitForBytesWritten(0);
- 	//file.flush();
+   	
+	if(doLogging) 
+		stream << *scan;
 	
 	delete scan;
 }

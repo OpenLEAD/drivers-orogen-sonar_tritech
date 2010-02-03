@@ -12,6 +12,9 @@ using_library "micron"
 #using_library "avalontools"
 
 task_context "SonarDriverMicronTask" do
+	property('doLogging','bool',false);
+	property('logComment','/std/string','');
+	
 	#	 Name Frei belibig, Namespace::Objekt
 	input_port("SonarConfig","sensorConfig::SonarConfig").
 		doc "Configuration Values for Sonar"

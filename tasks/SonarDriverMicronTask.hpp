@@ -30,7 +30,7 @@ namespace sonar_driver {
     public:
         SonarDriverMicronTask(std::string const& name = "sonar_driver::SonarDriverMicronTask");
 	
-	static std::string getLoggerFileName();
+	static std::string getLoggerFileName(const char *comment);
 
         RTT::FileDescriptorActivity* getFileDescriptorActivity();
 
@@ -97,11 +97,12 @@ namespace sonar_driver {
          */
         // void cleanupHook();
 	private:
-		std::fstream stream;
+		std::ofstream stream;
 		SonarInterface *sonar;
 		float depth;
 		void processDepth(const double depth);
 		void processSonarScan(SonarScan* scan);
+		bool doLogging;
 //	public slots:
 //		void scanFinished(SonarScan *scan);
 //		void newDepthReady(float value);
