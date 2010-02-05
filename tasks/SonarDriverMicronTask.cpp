@@ -141,9 +141,9 @@ void SonarDriverMicronTask::processSonarScan(SonarScan *scan){
 	}
 	
 	groundData.depth	= depth;
-	groundData.stamp.now();
+	groundData.stamp = base::Time::now();
 	_CurrentGroundDistance.write(groundData);
-	data.stamp.now();
+	data.stamp = base::Time::now();
 	_SonarScan.write(data);
    	
 	if(doLogging) 
