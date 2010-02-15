@@ -34,8 +34,8 @@ task_context "SonarDriverMicronTask" do
 end
 
 deployment "sonar_driver_micron_task_application" do
-	bla = task("SonarDriverMicronTask","SonarDriverMicronTask").
-		periodic(0.01)
+	bla = task("SonarDriverMicronTask","SonarDriverMicronTask")
+	
 	#triggered #nur wenn nur wenn daten aufrufen
 	#
 	add_default_logger
