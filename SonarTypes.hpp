@@ -13,6 +13,9 @@ namespace sensorData
 {
 	struct Sonar{
 #ifndef __orogen
+	double getScale(){
+	  return  (((dataBytes*adInterval*640.0)/1000000000.0)*1500.0/2.0)/dataBytes;
+	}
 
 #endif
 		base::Time stamp;
