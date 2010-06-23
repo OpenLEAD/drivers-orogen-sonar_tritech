@@ -30,8 +30,6 @@ namespace sonar_driver {
     public:
         SonarDriverMicronTask(std::string const& name = "sonar_driver::SonarDriverMicronTask");
 	
-	static std::string getLoggerFileName(const char *comment);
-
         RTT::FileDescriptorActivity* getFileDescriptorActivity();
 
         /** This hook is called by Orocos when the state machine transitions
@@ -54,7 +52,7 @@ namespace sonar_driver {
          * stay in Stopped. Otherwise, it goes into Running and updateHook()
          * will be called.
          */
-        // bool startHook();
+        bool startHook();
 
         /** This hook is called by Orocos when the component is in the Running
          * state, at each activity step. Here, the activity gives the "ticks"
@@ -75,7 +73,7 @@ namespace sonar_driver {
          * this call. If the trigger is caused by something different (for
          * instance, a periodic update), then this set is empty.
          */
-         void updateHook(std::vector<RTT::PortInterface*> const& updated_ports);
+         void updateHook();
         
 
         /** This hook is called by Orocos when the component is in the
@@ -95,14 +93,13 @@ namespace sonar_driver {
          * from Stopped to PreOperational, requiring the call to configureHook()
          * before calling start() again.
          */
-        // void cleanupHook();
+        void cleanupHook();
 	private:
-		std::ofstream stream;
 		SonarInterface *sonar;
-		float depth;
-		void processDepth(const double depth);
-		void processSonarScan(SonarScan* scan);
-		bool doLogging;
+                bool scanUpdated;
+		void processDepth(base::Time const& time, double depth);
+		void processSonarScan(SonarScan const& scan);
+
 //	public slots:
 //		void scanFinished(SonarScan *scan);
 //		void newDepthReady(float value);

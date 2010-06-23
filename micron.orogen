@@ -12,12 +12,8 @@ using_library "micron"
 #using_library "avalontools"
 
 task_context "SonarDriverMicronTask" do
-	property('doLogging','bool',false);
-	property('logComment','/std/string','');
-	
-	#	 Name Frei belibig, Namespace::Objekt
-	input_port("SonarConfig","sensorConfig::SonarConfig").
-		doc "Configuration Values for Sonar"
+	property("config", "sensorConfig::SonarConfig").
+            doc "Configuration Values for Sonar"
 
 	output_port("SonarScan","sensorData::Sonar").
 		doc "Transmitting Sonar Data"
@@ -26,10 +22,13 @@ task_context "SonarDriverMicronTask" do
 		doc "Current Ground Distance"
     
 	property('port', '/std/string', "").
-        doc 'the device port'
+            doc 'the device port'
+        property('timeout', 'int', 200).
+            doc "timeout on the distance readings in milliseconds"
 	
-	port_driven:SonarConfig
-	#needs_configuration #es musst zunächst der configureHook auferufen werden
+	fatal_states :IO_ERROR
+
+	needs_configuration
 	fd_driven
 end
 
