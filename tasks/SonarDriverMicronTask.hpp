@@ -26,6 +26,7 @@ namespace sonar_driver {
     protected:
     
     
+    	void configureDevice();
 
     public:
         SonarDriverMicronTask(std::string const& name = "sonar_driver::SonarDriverMicronTask");

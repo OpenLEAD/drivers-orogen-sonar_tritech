@@ -30,27 +30,7 @@ bool SonarDriverMicronTask::configureHook()
 	if (!sonar->init(_port.value().c_str()))
             return false;
 
-        sensorConfig::SonarConfig data =  _config.get();
-        sonar->sendHeadData(
-                data.adc8on,
-                data.cont,
-                data.scanright,
-                data.invert,
-                data.chan2,
-                data.applyoffset,
-                data.pingpong,
-                data.rangeScale,
-                data.leftLimit,
-                data.rightLimit,
-                data.adSpan,
-                data.adLow,
-                data.initialGain,
-                data.motorStepDelayTime,
-                data.motorStepAngleSize,
-                data.adInterval,
-                data.numberOfBins,
-                data.adcSetpointCh
-                );
+	configureDevice();
 
         RTT::FileDescriptorActivity* activity = getFileDescriptorActivity();
         if (activity)
@@ -61,6 +41,31 @@ bool SonarDriverMicronTask::configureHook()
 	sonar->registerHandler(this);
 
 	return true;
+}
+
+void SonarDriverMicronTask::configureDevice()
+{
+    sensorConfig::SonarConfig data =  _config.get();
+    sonar->sendHeadData(
+        data.adc8on,
+        data.cont,
+        data.scanright,
+        data.invert,
+        data.chan2,
+        data.applyoffset,
+        data.pingpong,
+        data.rangeScale,
+        data.leftLimit,
+        data.rightLimit,
+        data.adSpan,
+        data.adLow,
+        data.initialGain,
+        data.motorStepDelayTime,
+        data.motorStepAngleSize,
+        data.adInterval,
+        data.numberOfBins,
+        data.adcSetpointCh
+    );
 }
 
 bool SonarDriverMicronTask::startHook()
@@ -75,6 +80,13 @@ void SonarDriverMicronTask::updateHook()
     RTT::FileDescriptorActivity* activity = getFileDescriptorActivity();
     if (activity && activity->hasError() && activity->hasTimeout())
         return fatal(IO_ERROR);
+
+    sensorConfig::SonarConfig config;
+    if (_config_port.read(config))
+    {
+    	_config.set(config);
+	configureDevice();
+    }
 
     scanUpdated = false;
     if (!sonar->processSerialData())
