@@ -100,6 +100,8 @@ namespace sonar_driver {
                 bool scanUpdated;
 		void processDepth(base::Time const& time, double depth);
 		void processSonarScan(SonarScan const& scan);
+		bool configPhase;
+		int errorCnt;
 
 //	public slots:
 //		void scanFinished(SonarScan *scan);

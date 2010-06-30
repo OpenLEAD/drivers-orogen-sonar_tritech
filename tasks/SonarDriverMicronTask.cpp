@@ -14,6 +14,8 @@ SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name)
     : SonarDriverMicronTaskBase(name)
     , sonar(0)
 {
+	configPhase=false;
+	errorCnt=0;
 }
 
 
@@ -45,6 +47,12 @@ bool SonarDriverMicronTask::configureHook()
 
 void SonarDriverMicronTask::configureDevice()
 {
+    RTT::FileDescriptorActivity* activity = getFileDescriptorActivity();
+    if (activity){
+    	activity->setTimeout(5000);
+    }
+    configPhase=true;
+
     sensorConfig::SonarConfig data =  _config.get();
     sonar->sendHeadData(
         data.adc8on,
@@ -89,8 +97,12 @@ void SonarDriverMicronTask::updateHook()
     }
 
     scanUpdated = false;
-    if (!sonar->processSerialData())
-        return fatal(IO_ERROR);
+    if (!sonar->processSerialData()){
+    	if(!configPhase || errorCnt > 5000/200) //200ms timeout and maximum wait time is 5000 on configuration phase
+	        return fatal(IO_ERROR);
+	else
+		errorCnt++;
+    }
 
     // Check if we got a new scan. If we did, ask for a new one
     if (scanUpdated)
@@ -127,6 +139,15 @@ void SonarDriverMicronTask::processSonarScan(SonarScan const& scan){
 	data.scanData      = scan.scanData;
         scanUpdated = true;
 	_SonarScan.write(data);
+	if(configPhase){
+        	RTT::FileDescriptorActivity* activity = getFileDescriptorActivity();
+    		if (activity){
+	            	activity->setTimeout(_timeout.get());
+		}
+		configPhase=false;
+		errorCnt=0;
+	}
+
 }
 
 
