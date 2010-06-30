@@ -16,6 +16,8 @@ SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name)
 {
 	configPhase=false;
 	errorCnt=0;
+
+	_config.set(sensorConfig::SonarConfig()); 
 }
 
 
