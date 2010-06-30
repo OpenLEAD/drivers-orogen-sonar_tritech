@@ -6,10 +6,8 @@
 
 namespace sensorConfig
 {
-	struct SonarConfig{
-#ifndef __orogen
 
-#endif
+struct SonarConfig{
     base::Time stamp;
     bool adc8on;
     bool cont;
@@ -30,8 +28,29 @@ namespace sensorConfig
     uint16_t adInterval;
     uint16_t numberOfBins;
     uint16_t adcSetpointCh;
-
-	};
+#ifndef __orogen
+	SonarConfig():
+		adc8on(true),
+		cont(true),
+		scanright(false),
+		invert(false),
+		chan2(true),
+		applyoffset(false),
+		pingpong(false),
+		rangeScale(30),
+		leftLimit(1),
+		rightLimit(6399),
+		adSpan(81),
+		adLow(8),
+		initialGain(230),
+		motorStepDelayTime(25),
+		motorStepAngleSize(32),
+		adInterval(200),
+		numberOfBins(600),
+		adcSetpointCh(0)
+	{};
+#endif
+    };
 
 
 };
