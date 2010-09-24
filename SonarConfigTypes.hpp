@@ -42,7 +42,7 @@ struct SonarConfig{
 		rightLimit(6399),
 		adSpan(81),
 		adLow(8),
-		initialGain(10),
+		initialGain(50),
 		motorStepDelayTime(25),
 		motorStepAngleSize(32),
 		adInterval(50),
