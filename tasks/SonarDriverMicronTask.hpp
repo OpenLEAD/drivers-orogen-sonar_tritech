@@ -2,21 +2,12 @@
 #define SONAR_DRIVER_SONARDRIVERMICRONTASK_TASK_HPP
 
 #include "sonar_driver/SonarDriverMicronTaskBase.hpp"
-//#include <QObject>
-//#include <QCoreApplication>
-//#include <QFile>
-//#include <QDataStream>
 #include <fstream>
 #include <SonarInterface.h>
 #include <string>
+#include <rtt/extras/FileDescriptorActivity.hpp>
 
-//class SonarInterface;
 class SonarScan;
-
-namespace RTT
-{
-    class FileDescriptorActivity;
-}
 
 
 namespace sonar_driver {
@@ -27,11 +18,11 @@ namespace sonar_driver {
     
     
     	void configureDevice();
+	RTT::extras::FileDescriptorActivity* activity;
 
     public:
         SonarDriverMicronTask(std::string const& name = "sonar_driver::SonarDriverMicronTask");
 	
-        RTT::FileDescriptorActivity* getFileDescriptorActivity();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the
@@ -102,10 +93,6 @@ namespace sonar_driver {
 		void processSonarScan(SonarScan const& scan);
 		bool configPhase;
 		int errorCnt;
-
-//	public slots:
-//		void scanFinished(SonarScan *scan);
-//		void newDepthReady(float value);
     };
 }
 

@@ -1,14 +1,8 @@
 #include "SonarDriverMicronTask.hpp"
-
-#include <rtt/FileDescriptorActivity.hpp>
-
 #include <SonarInterface.h>
 
 using namespace sonar_driver;
 
-
-RTT::FileDescriptorActivity* SonarDriverMicronTask::getFileDescriptorActivity()
-{ return dynamic_cast< RTT::FileDescriptorActivity* >(getActivity().get()); }
 
 SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name)
     : SonarDriverMicronTaskBase(name)
@@ -16,7 +10,7 @@ SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name)
 {
 	configPhase=false;
 	errorCnt=0;
-
+	activity=0;
 	_config.set(sensorConfig::SonarConfig()); 
 }
 
@@ -35,8 +29,7 @@ bool SonarDriverMicronTask::configureHook()
             return false;
 
 	configureDevice();
-
-        RTT::FileDescriptorActivity* activity = getFileDescriptorActivity();
+	activity =  getActivity<RTT::extras::FileDescriptorActivity>();
         if (activity)
         {
             activity->watch(sonar->getFileDescriptor());
@@ -49,7 +42,6 @@ bool SonarDriverMicronTask::configureHook()
 
 void SonarDriverMicronTask::configureDevice()
 {
-    RTT::FileDescriptorActivity* activity = getFileDescriptorActivity();
     if (activity){
     	activity->setTimeout(5000);
     }
@@ -87,14 +79,13 @@ bool SonarDriverMicronTask::startHook()
 
 void SonarDriverMicronTask::updateHook()
 {
-    RTT::FileDescriptorActivity* activity = getFileDescriptorActivity();
     if (activity && activity->hasError() && activity->hasTimeout()){
     	printf("Fatal error: activityError: %s, hasTimeout: %s\n",activity->hasError()?"true":"false",activity->hasTimeout()?"true":"false");
-        return fatal(IO_ERROR);
+        return exception(IO_ERROR);
     }
 
     sensorConfig::SonarConfig config;
-    if (_config_port.read(config))
+    if (_config_port.read(config) == RTT::NewData)
     {
     	_config.set(config);
 	configureDevice();
@@ -105,7 +96,7 @@ void SonarDriverMicronTask::updateHook()
 
     	if(!configPhase && errorCnt > 50){ //50 times requesting data before go to real ciritcal error
 		fprintf(stderr,"Warning re-requesting data exceeded retry limit!\n");
-	        return fatal(IO_ERROR);
+	        return exception(IO_ERROR);
 	}else{
 		fprintf(stderr,"Warning re-requesting data!\n");
         	sonar->requestData();
@@ -114,7 +105,7 @@ void SonarDriverMicronTask::updateHook()
 
     	if(configPhase && errorCnt > 5000/200){ //200ms timeout and maximum wait time is 5000 on configuration phase
 		printf("FATAL errorCount = %i, ConfigPhase: %s\n",errorCnt,configPhase?"true":"false");
-	        return fatal(IO_ERROR);
+	        return exception(IO_ERROR);
 	}else
 		errorCnt++;
     }
@@ -156,7 +147,6 @@ void SonarDriverMicronTask::processSonarScan(SonarScan const& scan){
 	_SonarScan.write(data);
 	printf("Got SonarScan..\n");
 	if(configPhase){
-        	RTT::FileDescriptorActivity* activity = getFileDescriptorActivity();
     		if (activity){
 	            	activity->setTimeout(_timeout.get());
 		}
@@ -177,7 +167,6 @@ void SonarDriverMicronTask::processSonarScan(SonarScan const& scan){
 
 void SonarDriverMicronTask::cleanupHook()
 {
-        RTT::FileDescriptorActivity* activity = getFileDescriptorActivity();
         if (activity)
             activity->unwatch(sonar->getFileDescriptor());
         sonar->close();

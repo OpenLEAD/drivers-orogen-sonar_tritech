@@ -37,6 +37,7 @@ end
 
 deployment "sonar_driver_micron_task_application" do
 	bla = task("SonarDriverMicronTask","SonarDriverMicronTask")
+	do_not_install
 	
 	#triggered #nur wenn nur wenn daten aufrufen
 	#
