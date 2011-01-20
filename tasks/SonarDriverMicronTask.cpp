@@ -123,8 +123,12 @@ void SonarDriverMicronTask::processDepth(base::Time const& time, double value){
 }
 
 void SonarDriverMicronTask::processSonarScan(SonarScan const& scan){
+	base::samples::SonarScan baseScan;
 	sensorData::Sonar data;
-	data.stamp = scan.time;
+
+	data.stamp 	   = scan.time;
+	baseScan.time 	   = scan.time;
+
 	data.packedSize    = scan.packedSize;
 	data.deviceType    = scan.deviceType;
 	data.headStatus    = scan.headStatus;
@@ -137,13 +141,22 @@ void SonarDriverMicronTask::processSonarScan(SonarScan const& scan){
 	data.adSpawn       = scan.adSpawn;
 	data.adLow         = scan.adLow;
 	data.headingOffset = scan.headingOffset;
-	data.adInterval    = scan.adInterval;
+	
+	data.adInterval    	   = scan.adInterval;
+	baseScan.time_beetween_bins    = ((scan.adInterval*640.0)*10e-9);
+
 	data.leftLimit     = scan.leftLimit;
 	data.rightLimit    = scan.rightLimit;
 	data.steps         = scan.steps;
+	
 	data.bearing       = scan.bearing;
+	baseScan.angle     = scan.bearing/6399.0*2.0*M_PI;
+
 	data.scanData      = scan.scanData;
+	baseScan.scanData  = scan.scanData;
+
         scanUpdated = true;
+	_BaseScan.write(baseScan);
 	_SonarScan.write(data);
 	printf("Got SonarScan..\n");
 	if(configPhase){

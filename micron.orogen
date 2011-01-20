@@ -18,6 +18,9 @@ task_context "SonarDriverMicronTask" do
 	input_port("config_port", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
 
+	output_port("BaseScan","base::samples::SonarScan").
+		doc "Transmitting Sonar Data"
+	
 	output_port("SonarScan","sensorData::Sonar").
 		doc "Transmitting Sonar Data"
 	
