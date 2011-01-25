@@ -1,7 +1,7 @@
-#ifndef SONAR_DRIVER_SONARDRIVERMICRONTASK_TASK_HPP
-#define SONAR_DRIVER_SONARDRIVERMICRONTASK_TASK_HPP
+#ifndef SONAR_DRIVER_TASK_HPP
+#define SONAR_DRIVER_TASK_HPP
 
-#include "sonar_driver/SonarDriverMicronTaskBase.hpp"
+#include "sonar_driver/TaskBase.hpp"
 #include <fstream>
 #include <SonarInterface.h>
 #include <string>
@@ -11,9 +11,9 @@ class SonarScan;
 
 
 namespace sonar_driver {
-    class SonarDriverMicronTask : public SonarHandler, public SonarDriverMicronTaskBase
+    class Task : public SonarHandler, public TaskBase
     {
-    friend class SonarDriverMicronTaskBase;
+    friend class TaskBase;
     protected:
     
     
@@ -21,7 +21,7 @@ namespace sonar_driver {
 	RTT::extras::FileDescriptorActivity* activity;
 
     public:
-        SonarDriverMicronTask(std::string const& name = "sonar_driver::SonarDriverMicronTask");
+        Task(std::string const& name = "sonar_driver::Task");
 	
 
         /** This hook is called by Orocos when the state machine transitions

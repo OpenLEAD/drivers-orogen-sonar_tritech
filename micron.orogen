@@ -3,7 +3,6 @@ version "0.1"
 
 #Checkt Package Config nach include pfaden (hier z.B. Sonar.h
 import_types_from "base"
-import_types_from "SonarTypes.hpp"
 import_types_from "SonarConfigTypes.hpp"
 import_types_from "GroundDistanceReading.hpp"
 
@@ -11,7 +10,7 @@ import_types_from "GroundDistanceReading.hpp"
 using_library "micron"
 #using_library "avalontools"
 
-task_context "SonarDriverMicronTask" do
+task_context "Task" do
 	property("config", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
 
@@ -19,9 +18,6 @@ task_context "SonarDriverMicronTask" do
             doc "Configuration Values for Sonar"
 
 	output_port("BaseScan","base::samples::SonarScan").
-		doc "Transmitting Sonar Data"
-	
-	output_port("SonarScan","sensorData::Sonar").
 		doc "Transmitting Sonar Data"
 	
 	output_port("CurrentGroundDistance","sensorData::GroundDistanceReading").
@@ -39,7 +35,7 @@ task_context "SonarDriverMicronTask" do
 end
 
 deployment "sonar_driver_micron_task_application" do
-	bla = task("SonarDriverMicronTask","SonarDriverMicronTask")
+	bla = task("SonarDriverMicronTask","Task")
 	do_not_install
 	
 	#triggered #nur wenn nur wenn daten aufrufen

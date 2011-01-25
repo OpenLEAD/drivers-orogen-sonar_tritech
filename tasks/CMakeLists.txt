@@ -1,11 +1,11 @@
-include(sonar_driverTaskLib)
+# Generated from orogen/lib/orogen/templates/tasks/CMakeLists.txt
 
+include(sonar_driverTaskLib)
 ADD_LIBRARY(${SONAR_DRIVER_TASKLIB_NAME} SHARED 
-	${SONAR_DRIVER_TASKLIB_SOURCES}
-)
+    ${SONAR_DRIVER_TASKLIB_SOURCES})
 
 add_dependencies(${SONAR_DRIVER_TASKLIB_NAME}
-    regen-toolkit)
+    regen-typekit)
 
 
 TARGET_LINK_LIBRARIES(${SONAR_DRIVER_TASKLIB_NAME}

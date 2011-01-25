@@ -1,11 +1,11 @@
-#include "SonarDriverMicronTask.hpp"
+#include "Task.hpp"
 #include <SonarInterface.h>
 
 using namespace sonar_driver;
 
 
-SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name)
-    : SonarDriverMicronTaskBase(name)
+Task::Task(std::string const& name)
+    : TaskBase(name)
     , sonar(0)
 {
 	configPhase=false;
@@ -19,10 +19,10 @@ SonarDriverMicronTask::SonarDriverMicronTask(std::string const& name)
 
 
 /// The following lines are template definitions for the various state machine
-// hooks defined by Orocos::RTT. See SonarDriverMicronTask.hpp for more detailed
+// hooks defined by Orocos::RTT. See Task.hpp for more detailed
 // documentation about them.
 
-bool SonarDriverMicronTask::configureHook()
+bool Task::configureHook()
 {
 	sonar = new SonarInterface();
 	if (!sonar->init(_port.value().c_str()))
@@ -40,7 +40,7 @@ bool SonarDriverMicronTask::configureHook()
 	return true;
 }
 
-void SonarDriverMicronTask::configureDevice()
+void Task::configureDevice()
 {
     if (activity){
     	activity->setTimeout(5000);
@@ -70,14 +70,14 @@ void SonarDriverMicronTask::configureDevice()
     );
 }
 
-bool SonarDriverMicronTask::startHook()
+bool Task::startHook()
 {
     // Start receiving data
     sonar->requestData();
     return true;
 }
 
-void SonarDriverMicronTask::updateHook()
+void Task::updateHook()
 {
     if (activity && activity->hasError() && activity->hasTimeout()){
     	printf("Fatal error: activityError: %s, hasTimeout: %s\n",activity->hasError()?"true":"false",activity->hasTimeout()?"true":"false");
@@ -85,7 +85,7 @@ void SonarDriverMicronTask::updateHook()
     }
 
     sensorConfig::SonarConfig config;
-    if (_config_port.read(config) == RTT::NewData)
+    while(_config_port.read(config,false) == RTT::NewData)
     {
     	_config.set(config);
 	configureDevice();
@@ -115,50 +115,26 @@ void SonarDriverMicronTask::updateHook()
         sonar->requestData();
 }
 
-void SonarDriverMicronTask::processDepth(base::Time const& time, double value){
+void Task::processDepth(base::Time const& time, double value){
 	sensorData::GroundDistanceReading groundData;
 	groundData.stamp = time;
 	groundData.depth = value;
 	_CurrentGroundDistance.write(groundData);
 }
 
-void SonarDriverMicronTask::processSonarScan(SonarScan const& scan){
+void Task::processSonarScan(SonarScan const& scan){
 	base::samples::SonarScan baseScan;
-	sensorData::Sonar data;
 
-	data.stamp 	   = scan.time;
 	baseScan.time 	   = scan.time;
 
-	data.packedSize    = scan.packedSize;
-	data.deviceType    = scan.deviceType;
-	data.headStatus    = scan.headStatus;
-	data.sweepCode     = scan.sweepCode;
-	data.headControl   = scan.headControl;
-	data.range         = scan.range;
-	data.txn           = scan.txn;
-	data.gain          = scan.gain;
-	data.slope         = scan.slope;
-	data.adSpawn       = scan.adSpawn;
-	data.adLow         = scan.adLow;
-	data.headingOffset = scan.headingOffset;
-	
-	data.adInterval    	   = scan.adInterval;
 	baseScan.time_beetween_bins    = ((scan.adInterval*640.0)*10e-9);
 
-	data.leftLimit     = scan.leftLimit;
-	data.rightLimit    = scan.rightLimit;
-	data.steps         = scan.steps;
-	
-	data.bearing       = scan.bearing;
 	baseScan.angle     = scan.bearing/6399.0*2.0*M_PI;
 
-	data.scanData      = scan.scanData;
 	baseScan.scanData  = scan.scanData;
 
         scanUpdated = true;
 	_BaseScan.write(baseScan);
-	_SonarScan.write(data);
-	printf("Got SonarScan..\n");
 	if(configPhase){
     		if (activity){
 	            	activity->setTimeout(_timeout.get());
@@ -171,14 +147,14 @@ void SonarDriverMicronTask::processSonarScan(SonarScan const& scan){
 }
 
 
-// void SonarDriverMicronTask::errorHook()
+// void Task::errorHook()
 // {
 // }
-// void SonarDriverMicronTask::stopHook()
+// void Task::stopHook()
 // {
 // }
 
-void SonarDriverMicronTask::cleanupHook()
+void Task::cleanupHook()
 {
         if (activity)
             activity->unwatch(sonar->getFileDescriptor());
