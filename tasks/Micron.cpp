@@ -1,11 +1,10 @@
-#include "Task.hpp"
-#include <SonarInterface.h>
+#include "Micron.hpp"
 
 using namespace sonar_driver;
 
 
-Task::Task(std::string const& name)
-    : TaskBase(name)
+Micron::Micron(std::string const& name)
+    : MicronBase(name)
     , sonar(0)
 {
 	configPhase=false;
@@ -19,28 +18,22 @@ Task::Task(std::string const& name)
 
 
 /// The following lines are template definitions for the various state machine
-// hooks defined by Orocos::RTT. See Task.hpp for more detailed
+// hooks defined by Orocos::RTT. See Micron.hpp for more detailed
 // documentation about them.
 
-bool Task::configureHook()
+bool Micron::configureHook()
 {
-	sonar = new SonarInterface();
+	sonar = new SeaNet::Micron::Driver();
 	if (!sonar->init(_port.value().c_str()))
             return false;
 
-	configureDevice();
 	activity =  getActivity<RTT::extras::FileDescriptorActivity>();
-        if (activity)
-        {
-            activity->watch(sonar->getFileDescriptor());
-            activity->setTimeout(_timeout.get());
-        }
 	sonar->registerHandler(this);
 
 	return true;
 }
 
-void Task::configureDevice()
+void Micron::configureDevice()
 {
     if (activity){
     	activity->setTimeout(5000);
@@ -70,14 +63,20 @@ void Task::configureDevice()
     );
 }
 
-bool Task::startHook()
+bool Micron::startHook()
 {
     // Start receiving data
     sonar->requestData();
+    if (activity)
+    {
+            activity->watch(sonar->getFileDescriptor());
+            activity->setTimeout(_timeout.get());
+    }
+    configureDevice();
     return true;
 }
 
-void Task::updateHook()
+void Micron::updateHook()
 {
     if (activity && activity->hasError() && activity->hasTimeout()){
     	printf("Fatal error: activityError: %s, hasTimeout: %s\n",activity->hasError()?"true":"false",activity->hasTimeout()?"true":"false");
@@ -115,46 +114,54 @@ void Task::updateHook()
         sonar->requestData();
 }
 
-void Task::processDepth(base::Time const& time, double value){
+void Micron::processDepth(base::Time const& time, double value){
 	sensorData::GroundDistanceReading groundData;
 	groundData.stamp = time;
 	groundData.depth = value;
 	_CurrentGroundDistance.write(groundData);
 }
 
-void Task::processSonarScan(SonarScan const& scan){
-	base::samples::SonarScan baseScan;
+void Micron::processSonarScan(const SonarScan *s){
+	const MicronScan *scan = dynamic_cast<const MicronScan*>(s);
+	if(scan){	
+		base::samples::SonarScan baseScan;
 
-	baseScan.time 	   = scan.time;
+		baseScan.time 	   = scan->time;
 
-	baseScan.time_beetween_bins    = ((scan.adInterval*640.0)*10e-9);
+		baseScan.time_beetween_bins    = ((scan->adInterval*640.0)*10e-9);
 
-	baseScan.angle     = scan.bearing/6399.0*2.0*M_PI;
+		baseScan.angle     = scan->bearing/6399.0*2.0*M_PI;
 
-	baseScan.scanData  = scan.scanData;
+		baseScan.scanData  = scan->scanData;
 
-        scanUpdated = true;
-	_BaseScan.write(baseScan);
-	if(configPhase){
-    		if (activity){
-	            	activity->setTimeout(_timeout.get());
+		scanUpdated = true;
+		_BaseScan.write(baseScan);
+		if(configPhase){
+			if (activity){
+				activity->setTimeout(_timeout.get());
+			}
+			configPhase=false;
+			errorCnt=0;
 		}
-		configPhase=false;
-		errorCnt=0;
+		errorCnt = 0;
 	}
-	errorCnt = 0;
 
 }
 
 
-// void Task::errorHook()
-// {
-// }
-// void Task::stopHook()
+// void Micron::errorHook()
 // {
 // }
 
-void Task::cleanupHook()
+void Micron::stopHook()
+{
+ if (activity)
+ {
+         activity->clearAllWatches();
+ }
+}
+
+void Micron::cleanupHook()
 {
         if (activity)
             activity->unwatch(sonar->getFileDescriptor());

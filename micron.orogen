@@ -7,10 +7,10 @@ import_types_from "SonarConfigTypes.hpp"
 import_types_from "GroundDistanceReading.hpp"
 
 #Er linkt gegen die lib...
-using_library "micron"
+using_library "seanet"
 #using_library "avalontools"
 
-task_context "Task" do
+task_context "Micron" do
 	property("config", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
 
@@ -34,8 +34,29 @@ task_context "Task" do
 	fd_driven
 end
 
+task_context "Profiling" do
+	property("config", "sensorConfig::ProfilingConfig").
+            doc "Configuration Values for Sonar"
+
+#	input_port("config_port", "sensorConfig::ProfilingConfig").
+ #           doc "Configuration Values for Sonar"
+
+	output_port("Scan","base::samples::LaserScan").
+		doc "Transmitting Sonar Data"
+	
+	property('port', '/std/string', "").
+            doc 'the device port'
+        property('timeout', 'int', 200).
+            doc "timeout on the distance readings in milliseconds"
+	
+	fatal_states :IO_ERROR
+
+	needs_configuration
+	fd_driven
+end
+
 deployment "sonar_driver_micron_task_application" do
-	bla = task("SonarDriverMicronTask","Task")
+	bla = task("SonarDriverMicronTask","Micron")
 	do_not_install
 	
 	#triggered #nur wenn nur wenn daten aufrufen

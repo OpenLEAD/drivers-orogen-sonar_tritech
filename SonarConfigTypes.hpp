@@ -10,9 +10,15 @@
 
 #include <inttypes.h>
 #include <base/time.h>
+#include <Profiling.h>
 
 namespace sensorConfig
 {
+
+struct ProfilingConfig{
+	base::Time stamp;
+	SeaNet::Profiling::headControl config;
+};
 
 struct SonarConfig{
     base::Time stamp;
