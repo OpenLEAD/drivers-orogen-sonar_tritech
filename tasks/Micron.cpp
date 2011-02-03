@@ -10,7 +10,8 @@ Micron::Micron(std::string const& name)
 	configPhase=false;
 	errorCnt=0;
 	activity=0;
-	_config.set(sensorConfig::SonarConfig()); 
+	_config.set(sensorConfig::SonarConfig());
+	currentConfig = _config.get();
 }
 
 
@@ -87,6 +88,11 @@ void Micron::updateHook()
     while(_config_port.read(config,false) == RTT::NewData)
     {
     	_config.set(config);
+	configureDevice();
+    }
+    config = _config.get();
+    if(currentConfig != config){
+    	currentConfig = config;
 	configureDevice();
     }
 

@@ -18,6 +18,7 @@ namespace sonar_driver {
     
     	void configureDevice();
 	RTT::extras::FileDescriptorActivity* activity;
+	sensorConfig::SonarConfig currentConfig;
 
     public:
         Micron(std::string const& name = "sonar_driver::Micron");
