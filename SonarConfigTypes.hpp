@@ -62,8 +62,32 @@ struct SonarConfig{
 		numberOfBins(600),
 		adcSetpointCh(0)
 	{};
+	bool operator!=(const SonarConfig &other) const{
+	    bool b = 
+	    other.stamp==stamp &&
+	    other.adc8on==adc8on &&
+	    other.cont==cont &&
+	    other.scanright==scanright &&
+	    other.invert==invert &&
+	    other.chan2==chan2 &&
+	    other.applyoffset==applyoffset &&
+	    other.pingpong==pingpong &&
+	    other.rangeScale==rangeScale &&
+	    other.leftLimit==leftLimit &&
+	    other.rightLimit==rightLimit &&
+	    other.adSpan==adSpan &&
+	    other.adLow==adLow &&
+	    other.initialGain==initialGain &&
+	    other.motorStepDelayTime==motorStepDelayTime &&
+	    other.motorStepAngleSize==motorStepAngleSize &&
+	    other.adInterval==adInterval &&
+	    other.numberOfBins==numberOfBins &&
+	    other.adcSetpointCh==adcSetpointCh;
+	    return !b;
+	};
 #endif
     };
+
 
 
 };
