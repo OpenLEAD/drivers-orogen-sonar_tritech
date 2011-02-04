@@ -48,11 +48,17 @@ task_context "Profiling" do
             doc 'the device port'
         property('timeout', 'int', 200).
             doc "timeout on the distance readings in milliseconds"
-	
+        
 	fatal_states :IO_ERROR
 
 	needs_configuration
 	fd_driven
+end
+
+deployment "Profiling_Test_Application" do
+	task("profiling","Profiling")
+	do_not_install
+	add_default_logger
 end
 
 deployment "sonar_driver_micron_task_application" do

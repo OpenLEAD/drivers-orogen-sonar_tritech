@@ -11,6 +11,7 @@
 #include <inttypes.h>
 #include <base/time.h>
 #include <Profiling.h>
+#include <string.h>
 
 namespace sensorConfig
 {
@@ -18,6 +19,14 @@ namespace sensorConfig
 struct ProfilingConfig{
 	base::Time stamp;
 	SeaNet::Profiling::headControl config;
+
+#ifndef __orogen
+	bool operator!=(const ProfilingConfig &other) const{
+		if(stamp != other.stamp || config != other.config)
+			return true;
+		return false;
+	}
+#endif
 };
 
 struct SonarConfig{

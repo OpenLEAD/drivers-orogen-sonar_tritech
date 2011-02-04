@@ -33,7 +33,7 @@ bool Profiling::configureHook()
 	activity =  getActivity<RTT::extras::FileDescriptorActivity>();
 	//configureDevice();
 	sonar->registerHandler(this);
-
+	sonar->sendHeadData(_config.get().config);
 	return true;
 }
 
@@ -57,24 +57,19 @@ void Profiling::updateHook()
     	printf("Fatal error: activityError: %s, hasTimeout: %s\n",activity->hasError()?"true":"false",activity->hasTimeout()?"true":"false");
         return exception(IO_ERROR);
     }
-    if (!sonar->processSerialData()){
+    sensorConfig::ProfilingConfig newConfig = _config.get(); 
+    if(newConfig != currentConfig){
+	sonar->sendHeadData(_config.get().config);
+	currentConfig = _config.get();
+	//printf("reconfiguring\n");	
+    }
+	
+    if (!sonar->processSerialData(_timeout.get())){
        	sonar->requestData();
     }else{
 	if(scanUpdated)
 		sonar->requestData();
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
 // void Profiling::errorHook()
@@ -97,11 +92,17 @@ void Profiling::processSonarScan(const SonarScan *s){
 		base::samples::LaserScan baseScan;
 		baseScan.time 	   = scan->time;
 		baseScan.start_angle = scan->leftLimit/6399.0*2.0*M_PI;
+		baseScan.minRange = 20; //Hardcoded 2 cm
+		baseScan.maxRange = 100000; //Hardcoded 100meter
 		baseScan.angular_resolution = scan->stepSize/6399.0*2.0*M_PI;
 		baseScan.speed = 0;
+		printf("Stant angle: %f, resolution: %f\nScans:",baseScan.start_angle,baseScan.angular_resolution);
 		for(unsigned int i=0;i<scan->scanData.size();i++){
-			baseScan.ranges.push_back(scan->scanData[i]*1e-6*1500.0/2.0); //Time in microsecounds to secounds (1e-6) * time of water in speed (1500) / twice the way (2.0)
+			double distance = scan->scanData[i]*1e-6*1500.0/2.0;//Time in microsecounds to secounds (1e-6) * time of water in speed (1500) / twice the way (2.0)
+			baseScan.ranges.push_back(distance*1000); //To millimeters 
+			printf(" %f",distance);
 		}
+		printf("\n");
 		scanUpdated = true;
 		_Scan.write(baseScan);
 	}

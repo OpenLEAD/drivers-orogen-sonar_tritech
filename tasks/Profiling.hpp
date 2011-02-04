@@ -17,7 +17,7 @@ namespace sonar_driver {
 	bool scanUpdated;
 	void processSonarScan(const SonarScan *s);
 	RTT::extras::FileDescriptorActivity* activity;
-
+	sensorConfig::ProfilingConfig currentConfig;
     public:
         Profiling(std::string const& name = "sonar_driver::Profiling");
 
