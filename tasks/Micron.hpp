@@ -3,7 +3,7 @@
 
 #include "sonar_driver/MicronBase.hpp"
 #include <fstream>
-#include <SonarInterface.h>
+#include <SeaNet.h>
 #include <string>
 #include <rtt/extras/FileDescriptorActivity.hpp>
 #include <Micron.h>
