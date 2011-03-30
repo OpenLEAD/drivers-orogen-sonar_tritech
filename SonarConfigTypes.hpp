@@ -67,8 +67,8 @@ struct SonarConfig{
 		initialGain(50),
 		motorStepDelayTime(25),
 		motorStepAngleSize(32),
-		adInterval(60),
-		numberOfBins(600),
+		adInterval(30),
+		numberOfBins(300),
 		adcSetpointCh(0)
 	{};
 	bool operator!=(const SonarConfig &other) const{
