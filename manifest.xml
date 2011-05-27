@@ -9,5 +9,6 @@
   </export>
   <depend package="drivers/micron"/>
   <depend package="base/orogen/types"/>
+  <depend package="tools/logger"/>
 </package>
 
