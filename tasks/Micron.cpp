@@ -134,7 +134,7 @@ void Micron::processSonarScan(const SonarScan *s){
 
 		baseScan.time 	   = scan->time;
 
-		baseScan.time_beetween_bins    = ((scan->adInterval*640.0)*10e-9);
+		baseScan.time_beetween_bins    = ((scan->adInterval*640.0)*1e-9);
 
 		baseScan.angle     = scan->bearing/6399.0*2.0*M_PI;
 
