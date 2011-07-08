@@ -140,6 +140,20 @@ void Micron::processSonarScan(const SonarScan *s){
 
 		baseScan.scanData  = scan->scanData;
 
+		sensorConfig::SonarConfig debugConfig;
+		debugConfig.rangeScale		= scan->range;
+		debugConfig.leftLimit 		= scan->leftLimit;
+		debugConfig.rightLimit		= scan->rightLimit;
+		debugConfig.adSpan		= scan->adSpawn;
+		debugConfig.adLow		= scan->adLow; 
+		debugConfig.initialGain		= scan->gain;
+		debugConfig.motorStepDelayTime 	= 0;//scan->
+		debugConfig.motorStepAngleSize 	= scan->steps;
+		debugConfig.adInterval	 	= scan->adInterval;  
+		debugConfig.numberOfBins 	= 0;//scan->dataBytes;        
+		debugConfig.adcSetpointCh	= 0;//scan->        
+		_debug_config.write(debugConfig);
+
 		scanUpdated = true;
 		_BaseScan.write(baseScan);
 		if(configPhase){

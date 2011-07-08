@@ -16,6 +16,9 @@ task_context "Micron" do
 
 	input_port("config_port", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
+	
+	output_port("debug_config", "sensorConfig::SonarConfig").
+            doc "Debug Configuration output"
 
 	output_port("BaseScan","base::samples::SonarScan").
 		doc "Transmitting Sonar Data"
