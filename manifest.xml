@@ -7,7 +7,7 @@
   <export>
     <cpp cflags="" lflags="" />
   </export>
-  <depend package="drivers/micron"/>
+  <depend package="drivers/sonar_tritech"/>
   <depend package="base/orogen/types"/>
 </package>
 
