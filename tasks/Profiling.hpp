@@ -3,12 +3,12 @@
 #ifndef SONAR_DRIVER_PROFILING_TASK_HPP
 #define SONAR_DRIVER_PROFILING_TASK_HPP
 
-#include "sonar_driver/ProfilingBase.hpp"
+#include "sonar_tritech/ProfilingBase.hpp"
 #include <Profiling.h>
 #include <rtt/extras/FileDescriptorActivity.hpp>
 
 
-namespace sonar_driver {
+namespace sonar_tritech {
     class Profiling : public SeaNet::SonarHandler, public ProfilingBase
     {
 	friend class ProfilingBase;
@@ -19,7 +19,7 @@ namespace sonar_driver {
 	RTT::extras::FileDescriptorActivity* activity;
 	sensorConfig::ProfilingConfig currentConfig;
     public:
-        Profiling(std::string const& name = "sonar_driver::Profiling");
+        Profiling(std::string const& name = "sonar_tritech::Profiling");
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the

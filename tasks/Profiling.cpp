@@ -2,7 +2,7 @@
 
 #include "Profiling.hpp"
 
-using namespace sonar_driver;
+using namespace sonar_tritech;
 
 Profiling::Profiling(std::string const& name)
     : ProfilingBase(name)

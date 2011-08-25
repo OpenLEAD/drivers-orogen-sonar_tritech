@@ -1,4 +1,4 @@
-name "sonar_driver"
+name "sonar_tritech"
 version "0.1"
 
 #Checkt Package Config nach include pfaden (hier z.B. Sonar.h

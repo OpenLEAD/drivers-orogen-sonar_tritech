@@ -1,6 +1,6 @@
 #include "Micron.hpp"
 
-using namespace sonar_driver;
+using namespace sonar_tritech;
 
 
 Micron::Micron(std::string const& name)
