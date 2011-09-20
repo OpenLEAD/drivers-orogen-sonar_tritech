@@ -20,7 +20,7 @@ task_context "Micron" do
 	output_port("debug_config", "sensorConfig::SonarConfig").
             doc "Debug Configuration output"
 
-	output_port("BaseScan","base::samples::SonarScan").
+	output_port("BaseScan","base::samples::SonarBeam").
 		doc "Transmitting Sonar Data"
 	
 	output_port("CurrentGroundDistance","sensorData::GroundDistanceReading").

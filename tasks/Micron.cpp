@@ -130,15 +130,18 @@ void Micron::processDepth(base::Time const& time, double value){
 void Micron::processSonarScan(const SonarScan *s){
 	const MicronScan *scan = dynamic_cast<const MicronScan*>(s);
 	if(scan){	
-		base::samples::SonarScan baseScan;
+		base::samples::SonarBeam baseScan;
 
-		baseScan.time 	   = scan->time;
+		baseScan.time = scan->time;
 
-		baseScan.time_beetween_bins    = ((scan->adInterval*640.0)*1e-9);
+		baseScan.sampling_interval  = ((scan->adInterval*640.0)*1e-9);
 
-		baseScan.angle     = scan->bearing/6399.0*2.0*M_PI;
+		baseScan.bearing     = scan->bearing/6399.0*2.0*M_PI-M_PI;
 
-		baseScan.scanData  = scan->scanData;
+		baseScan.beam  = scan->scanData;
+                baseScan.speed_of_sound = 1500;
+                baseScan.beamwidth_vertical = 35/180*M_PI;
+                baseScan.beamwidth_horizontal = 3/180*M_PI;
 
 		sensorConfig::SonarConfig debugConfig;
 		debugConfig.rangeScale		= scan->range;
