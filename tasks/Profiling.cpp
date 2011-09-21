@@ -95,7 +95,8 @@ void Profiling::processSonarScan(const SonarScan *s){
 		baseScan.minRange = 20; //Hardcoded 2 cm
 		baseScan.maxRange = 100000; //Hardcoded 100meter
 		baseScan.angular_resolution = scan->stepSize/6399.0*2.0*M_PI;
-		baseScan.speed = 0;
+		baseScan.start_angle += _offset.get();
+                baseScan.speed = 0;
 		printf("Stant angle: %f, resolution: %f\nScans:",baseScan.start_angle,baseScan.angular_resolution);
 		for(unsigned int i=0;i<scan->scanData.size();i++){
 			double distance = scan->scanData[i]*1e-6*1500.0/2.0;//Time in microsecounds to secounds (1e-6) * time of water in speed (1500) / twice the way (2.0)

@@ -14,11 +14,14 @@ task_context "Micron" do
 	property("config", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
 
+        
 	input_port("config_port", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
 	
 	output_port("debug_config", "sensorConfig::SonarConfig").
             doc "Debug Configuration output"
+	
+        output_port("pts_subdevice", "/std/string")
 
 	output_port("BaseScan","base::samples::SonarScan").
 		doc "Transmitting Sonar Data"
@@ -40,6 +43,8 @@ end
 task_context "Profiling" do
 	property("config", "sensorConfig::ProfilingConfig").
             doc "Configuration Values for Sonar"
+        
+        property('offset','double',0)
 
 #	input_port("config_port", "sensorConfig::ProfilingConfig").
  #           doc "Configuration Values for Sonar"

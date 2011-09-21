@@ -24,13 +24,14 @@ Micron::Micron(std::string const& name)
 
 bool Micron::configureHook()
 {
-	sonar = new SeaNet::Micron::Driver();
+	sonar = new SeaNet::Micron::Driver(true);
 	if (!sonar->init(_port.value().c_str()))
             return false;
 
 	activity =  getActivity<RTT::extras::FileDescriptorActivity>();
 	sonar->registerHandler(this);
-
+        fprintf(stderr,"Opened subdevice: %s\n",sonar->getSlavePTS());
+        _pts_subdevice.write(std::string(sonar->getSlavePTS()));
 	return true;
 }
 
