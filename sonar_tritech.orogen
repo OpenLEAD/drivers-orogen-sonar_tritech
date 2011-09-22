@@ -23,6 +23,9 @@ task_context "Micron" do
 	
         output_port("pts_subdevice", "/std/string")
 
+        output_port("ground_distance", "base::samples::RigidBodyState").
+                doc "Current Ground Distance, if availible on AUX port"
+
 	output_port("BaseScan","base::samples::SonarBeam").
 		doc "Transmitting Sonar Data"
 	

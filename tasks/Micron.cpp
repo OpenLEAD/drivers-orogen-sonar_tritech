@@ -170,7 +170,16 @@ void Micron::processSonarScan(const SonarScan *s){
 		}
 		errorCnt = 0;
 	}
-
+    
+	const GroundDistance *gd = dynamic_cast<const GroundDistance*>(s);
+	if(gd){
+            base::samples::RigidBodyState water_depth;
+            water_depth.invalidate();
+            water_depth.time = gd->time;
+            water_depth.position[2] = gd->distance;
+            water_depth.cov_position(2,2) = 0.2;
+            _ground_distance.write(water_depth);
+        }
 }
 
 
