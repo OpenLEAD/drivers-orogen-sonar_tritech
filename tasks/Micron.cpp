@@ -138,7 +138,7 @@ void Micron::processSonarScan(const SonarScan *s){
 
 		baseScan.sampling_interval  = ((scan->adInterval*640.0)*1e-9);
 
-		baseScan.bearing     = base::Angle::fromRad(scan->bearing/6399.0*2.0*M_PI);
+		baseScan.bearing     = base::Angle::fromRad(M_PI-(scan->bearing/6399.0*2.0*M_PI));
 
 		baseScan.beam  = scan->scanData;
                 baseScan.speed_of_sound = 1500;
