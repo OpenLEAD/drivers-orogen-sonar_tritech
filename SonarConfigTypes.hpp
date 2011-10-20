@@ -12,6 +12,7 @@
 #include <base/time.h>
 #include <Profiling.h>
 #include <string.h>
+#include <base/angle.h>
 
 namespace sensorConfig
 {
@@ -62,13 +63,13 @@ struct SonarConfig{
 		applyoffset(false),
 		pingpong(false),
 		rangeScale(30),
-		leftLimit(-M_PI),
-		rightLimit(M_PI),
+		leftLimit(base::Angle::fromRad(M_PI)),
+		rightLimit(base::Angle::fromRad(M_PI)),
 		adSpan(81),
 		adLow(8),
 		initialGain(0.2),
 		motorStepDelayTime(25),
-		motorStepAngleSize(5.0/180.0*M_PI),
+		motorStepAngleSize(base::Angle::fromRad(5.0/180.0*M_PI)),
 		maximumDistance(15.0),
 		resolution(0.1),
 		adcSetpointCh(0)
