@@ -42,8 +42,23 @@ void Micron::configureDevice()
     	activity->setTimeout(5000);
     }
     configPhase=true;
-
     sensorConfig::SonarConfig data =  _config.get();
+    int bins	=  data.maximumDistance/data.resolution;
+    int ad	= (((data.resolution/1500.0)*2.0)*1e9)/640.0;
+
+(0,1÷1500,0)*1e9
+
+    if(
+	data.initialGain < 0.0 || data.initialGain > 1.0 ||
+	data.leftLimit < -M_PI || data.leftLimit > M_PI ||
+	data.rightLimit < -M_PI || data.rightLimit > M_PI ||
+	data.motorStepAngleSize < 0 || data.motorStepAngleSize / (0.05625/180.0*M_PI) > 255.0 ||
+	ad < 0 || ad > 1500 ||
+	bins < 0 || bins > 1500){
+		return exetion(INVALID_CONFIGURAZION);
+	}
+
+
     sonar->sendHeadData(
         data.adc8on,
         data.cont,
@@ -60,8 +75,8 @@ void Micron::configureDevice()
         data.initialGain,
         data.motorStepDelayTime,
         data.motorStepAngleSize,
-        data.adInterval,
-        data.numberOfBins,
+        ad,
+        bins,
         data.adcSetpointCh
     );
 }

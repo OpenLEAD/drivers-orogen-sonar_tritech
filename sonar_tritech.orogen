@@ -37,7 +37,7 @@ task_context "Micron" do
         property('timeout', 'int', 200).
             doc "timeout on the distance readings in milliseconds"
 	
-	fatal_states :IO_ERROR
+	fatal_states :IO_ERROR, :CONFIGURATION_ERROR
 
 	needs_configuration
 	fd_driven
