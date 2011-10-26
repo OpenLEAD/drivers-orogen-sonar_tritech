@@ -1,6 +1,7 @@
 #include "Micron.hpp"
+#include "base/angle.h"
 
-using namespace sonar_driver;
+using namespace sonar_tritech;
 
 
 Micron::Micron(std::string const& name)
@@ -24,13 +25,14 @@ Micron::Micron(std::string const& name)
 
 bool Micron::configureHook()
 {
-	sonar = new SeaNet::Micron::Driver();
+	sonar = new SeaNet::Micron::Driver(true);
 	if (!sonar->init(_port.value().c_str()))
             return false;
 
 	activity =  getActivity<RTT::extras::FileDescriptorActivity>();
 	sonar->registerHandler(this);
-
+        fprintf(stderr,"Opened subdevice: %s\n",sonar->getSlavePTS());
+        _pts_subdevice.write(std::string(sonar->getSlavePTS()));
 	return true;
 }
 
@@ -130,15 +132,32 @@ void Micron::processDepth(base::Time const& time, double value){
 void Micron::processSonarScan(const SonarScan *s){
 	const MicronScan *scan = dynamic_cast<const MicronScan*>(s);
 	if(scan){	
-		base::samples::SonarScan baseScan;
+		base::samples::SonarBeam baseScan;
 
-		baseScan.time 	   = scan->time;
+		baseScan.time = scan->time;
 
-		baseScan.time_beetween_bins    = ((scan->adInterval*640.0)*10e-9);
+		baseScan.sampling_interval  = ((scan->adInterval*640.0)*1e-9);
 
-		baseScan.angle     = scan->bearing/6399.0*2.0*M_PI;
+		baseScan.bearing     = base::Angle::fromRad(M_PI-(scan->bearing/6399.0*2.0*M_PI));
 
-		baseScan.scanData  = scan->scanData;
+		baseScan.beam  = scan->scanData;
+                baseScan.speed_of_sound = 1500;
+                baseScan.beamwidth_vertical = 35/180*M_PI;
+                baseScan.beamwidth_horizontal = 3/180*M_PI;
+
+		sensorConfig::SonarConfig debugConfig;
+		debugConfig.rangeScale		= scan->range;
+		debugConfig.leftLimit 		= scan->leftLimit;
+		debugConfig.rightLimit		= scan->rightLimit;
+		debugConfig.adSpan		= scan->adSpawn;
+		debugConfig.adLow		= scan->adLow; 
+		debugConfig.initialGain		= scan->gain;
+		debugConfig.motorStepDelayTime 	= 0;//scan->
+		debugConfig.motorStepAngleSize 	= scan->steps;
+		debugConfig.adInterval	 	= scan->adInterval;  
+		debugConfig.numberOfBins 	= 0;//scan->dataBytes;        
+		debugConfig.adcSetpointCh	= 0;//scan->        
+		_debug_config.write(debugConfig);
 
 		scanUpdated = true;
 		_BaseScan.write(baseScan);
@@ -151,7 +170,16 @@ void Micron::processSonarScan(const SonarScan *s){
 		}
 		errorCnt = 0;
 	}
-
+    
+	const GroundDistance *gd = dynamic_cast<const GroundDistance*>(s);
+	if(gd){
+            base::samples::RigidBodyState water_depth;
+            water_depth.invalidate();
+            water_depth.time = gd->time;
+            water_depth.position[2] = gd->distance;
+            water_depth.cov_position(2,2) = 0.2;
+            _ground_distance.write(water_depth);
+        }
 }
 
 

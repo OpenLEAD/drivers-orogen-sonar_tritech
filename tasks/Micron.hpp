@@ -1,7 +1,7 @@
 #ifndef SONAR_DRIVER_TASK_HPP
 #define SONAR_DRIVER_TASK_HPP
 
-#include "sonar_driver/MicronBase.hpp"
+#include "sonar_tritech/MicronBase.hpp"
 #include <fstream>
 #include <SeaNet.h>
 #include <string>
@@ -9,7 +9,7 @@
 #include <Micron.h>
 
 
-namespace sonar_driver {
+namespace sonar_tritech {
     class Micron : public SeaNet::SonarHandler, public MicronBase
     {
     friend class MicronBase;
@@ -21,7 +21,7 @@ namespace sonar_driver {
 	sensorConfig::SonarConfig currentConfig;
 
     public:
-        Micron(std::string const& name = "sonar_driver::Micron");
+        Micron(std::string const& name = "sonar_tritech::Micron");
 	
 
         /** This hook is called by Orocos when the state machine transitions

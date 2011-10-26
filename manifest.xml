@@ -9,5 +9,6 @@
   </export>
   <depend package="drivers/sonar_tritech"/>
   <depend package="base/orogen/types"/>
+  <depend package="tools/logger"/>
 </package>
 

@@ -2,7 +2,7 @@
 
 #include "Profiling.hpp"
 
-using namespace sonar_driver;
+using namespace sonar_tritech;
 
 Profiling::Profiling(std::string const& name)
     : ProfilingBase(name)
@@ -89,19 +89,30 @@ void Profiling::stopHook()
 void Profiling::processSonarScan(const SonarScan *s){
 	const ProfilerScan *scan = dynamic_cast<const ProfilerScan*>(s);
 	if(scan){	
+
 		base::samples::LaserScan baseScan;
 		baseScan.time 	   = scan->time;
 		baseScan.start_angle = scan->leftLimit/6399.0*2.0*M_PI;
 		baseScan.minRange = 20; //Hardcoded 2 cm
 		baseScan.maxRange = 100000; //Hardcoded 100meter
 		baseScan.angular_resolution = scan->stepSize/6399.0*2.0*M_PI;
-		baseScan.speed = 0;
-		printf("Stant angle: %f, resolution: %f\nScans:",baseScan.start_angle,baseScan.angular_resolution);
-		for(unsigned int i=0;i<scan->scanData.size();i++){
-			double distance = scan->scanData[i]*1e-6*1500.0/2.0;//Time in microsecounds to secounds (1e-6) * time of water in speed (1500) / twice the way (2.0)
-			baseScan.ranges.push_back(distance*1000); //To millimeters 
-			printf(" %f",distance);
-		}
+		baseScan.start_angle += _offset.get();
+                baseScan.speed = 0;
+		printf("Stant angle: %f, resolution: %f\nScans: direction: %i\n head control: %i\n",baseScan.start_angle,baseScan.angular_resolution,scan->sweep_code,scan->hd_Ctrl);
+                if(scan->sweep_code,scan->hd_Ctrl & 0x04){ //Do we scan left or right?
+		    for(unsigned int i=0;i<scan->scanData.size();i++){
+		            double distance = scan->scanData[scan->scanData.size()-i]*1e-6*1500.0/2.0;//Time in microsecounds to secounds (1e-6) * time of water in speed (1500) / twice the way (2.0)
+			    baseScan.ranges.push_back(distance*1000); //To millimeters 
+			    printf(" %f",distance);
+		    }
+                }else{
+		    for(unsigned int i=0;i<scan->scanData.size();i++){
+		            double distance = scan->scanData[i]*1e-6*1500.0/2.0;//Time in microsecounds to secounds (1e-6) * time of water in speed (1500) / twice the way (2.0)
+			    baseScan.ranges.push_back(distance*1000); //To millimeters 
+			    printf(" %f",distance);
+		    }
+                    
+                }
 		printf("\n");
 		scanUpdated = true;
 		_Scan.write(baseScan);

@@ -1,4 +1,4 @@
-name "sonar_driver"
+name "sonar_tritech"
 version "0.1"
 
 #Checkt Package Config nach include pfaden (hier z.B. Sonar.h
@@ -14,10 +14,19 @@ task_context "Micron" do
 	property("config", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
 
+        
 	input_port("config_port", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
+	
+	output_port("debug_config", "sensorConfig::SonarConfig").
+            doc "Debug Configuration output"
+	
+        output_port("pts_subdevice", "/std/string")
 
-	output_port("BaseScan","base::samples::SonarScan").
+        output_port("ground_distance", "base::samples::RigidBodyState").
+                doc "Current Ground Distance, if availible on AUX port"
+
+	output_port("BaseScan","base::samples::SonarBeam").
 		doc "Transmitting Sonar Data"
 	
 	output_port("CurrentGroundDistance","sensorData::GroundDistanceReading").
@@ -37,6 +46,8 @@ end
 task_context "Profiling" do
 	property("config", "sensorConfig::ProfilingConfig").
             doc "Configuration Values for Sonar"
+        
+        property('offset','double',0)
 
 #	input_port("config_port", "sensorConfig::ProfilingConfig").
  #           doc "Configuration Values for Sonar"
