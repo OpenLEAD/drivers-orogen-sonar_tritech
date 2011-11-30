@@ -25,8 +25,10 @@ Micron::Micron(std::string const& name)
 
 bool Micron::configureHook()
 {
-	sonar = new SeaNet::Micron::Driver(true);
-	if (!sonar->init(_port.value().c_str()))
+	sonar = new SeaNet::Micron::Driver(false); 
+        //Do not create PTS subdevice if no reader readds the data!
+	
+        if (!sonar->init(_port.value().c_str()))
             return false;
 
 	activity =  getActivity<RTT::extras::FileDescriptorActivity>();
