@@ -18,8 +18,8 @@ task_context "Micron" do
 	input_port("config_port", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
 	
-	output_port("debug_config", "sensorConfig::SonarConfig").
-            doc "Debug Configuration output"
+	#output_port("debug_config", "sensorConfig::SonarConfig").
+        #    doc "Debug Configuration output"
 	
         output_port("pts_subdevice", "/std/string")
 
@@ -37,7 +37,7 @@ task_context "Micron" do
         property('timeout', 'int', 200).
             doc "timeout on the distance readings in milliseconds"
 	
-	fatal_states :IO_ERROR
+	fatal_states :IO_ERROR, :INVALID_CONFIGURATION
 
 	needs_configuration
 	fd_driven

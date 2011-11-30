@@ -25,8 +25,10 @@ Micron::Micron(std::string const& name)
 
 bool Micron::configureHook()
 {
-	sonar = new SeaNet::Micron::Driver(true);
-	if (!sonar->init(_port.value().c_str()))
+	sonar = new SeaNet::Micron::Driver(false); 
+        //Do not create PTS subdevice if no reader readds the data!
+	
+        if (!sonar->init(_port.value().c_str()))
             return false;
 
 	activity =  getActivity<RTT::extras::FileDescriptorActivity>();
@@ -42,8 +44,26 @@ void Micron::configureDevice()
     	activity->setTimeout(5000);
     }
     configPhase=true;
-
     sensorConfig::SonarConfig data =  _config.get();
+    int bins	=  data.maximumDistance/data.resolution;
+
+    //1500m/s sound veolicity in water
+    //twice the time
+    //to microsecounds
+    //value of one means 640microsecounds for the sonar
+    int ad	= (((data.resolution/1500.0)*2.0)*1e9)/640.0;
+
+    if(
+	data.initialGain < 0.0 || data.initialGain > 1.0 ||
+	data.leftLimit.rad < -M_PI || data.leftLimit.rad > M_PI ||
+	data.rightLimit.rad < -M_PI || data.rightLimit.rad > M_PI ||
+	data.motorStepAngleSize.rad < 0 || data.motorStepAngleSize.rad / (0.05625/180.0*M_PI) > 255.0 ||
+	ad < 0 || ad > 1500 ||
+	bins < 0 || bins > 1500){
+		return exception(INVALID_CONFIGURATION);
+	}
+
+
     sonar->sendHeadData(
         data.adc8on,
         data.cont,
@@ -53,15 +73,15 @@ void Micron::configureDevice()
         data.applyoffset,
         data.pingpong,
         data.rangeScale,
-        data.leftLimit,
-        data.rightLimit,
+        ((data.leftLimit.rad+M_PI)/(M_PI*2.0))*6399.0,
+        ((data.rightLimit.rad+M_PI)/(M_PI*2.0))*6399.0,
         data.adSpan,
         data.adLow,
         data.initialGain,
         data.motorStepDelayTime,
-        data.motorStepAngleSize,
-        data.adInterval,
-        data.numberOfBins,
+        (data.motorStepAngleSize.rad/(M_PI*2.0))*6399.0,
+        ad,
+        bins,
         data.adcSetpointCh
     );
 }
@@ -142,13 +162,13 @@ void Micron::processSonarScan(const SonarScan *s){
 
 		baseScan.beam  = scan->scanData;
                 baseScan.speed_of_sound = 1500;
-                baseScan.beamwidth_vertical = 35/180*M_PI;
-                baseScan.beamwidth_horizontal = 3/180*M_PI;
-
+                baseScan.beamwidth_vertical = 35.0/180.0*M_PI;
+                baseScan.beamwidth_horizontal = 3.0/180.0*M_PI;
+#if 0
 		sensorConfig::SonarConfig debugConfig;
 		debugConfig.rangeScale		= scan->range;
-		debugConfig.leftLimit 		= scan->leftLimit;
-		debugConfig.rightLimit		= scan->rightLimit;
+		debugConfig.leftLimit.rad	= scan->leftLimit;
+		debugConfig.rightLimit.rad	= scan->rightLimit;
 		debugConfig.adSpan		= scan->adSpawn;
 		debugConfig.adLow		= scan->adLow; 
 		debugConfig.initialGain		= scan->gain;
@@ -158,7 +178,7 @@ void Micron::processSonarScan(const SonarScan *s){
 		debugConfig.numberOfBins 	= 0;//scan->dataBytes;        
 		debugConfig.adcSetpointCh	= 0;//scan->        
 		_debug_config.write(debugConfig);
-
+#endif
 		scanUpdated = true;
 		_BaseScan.write(baseScan);
 		if(configPhase){

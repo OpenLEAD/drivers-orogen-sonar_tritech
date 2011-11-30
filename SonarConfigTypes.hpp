@@ -12,6 +12,7 @@
 #include <base/time.h>
 #include <Profiling.h>
 #include <string.h>
+#include <base/angle.h>
 
 namespace sensorConfig
 {
@@ -40,15 +41,17 @@ struct SonarConfig{
     bool pingpong;
     
     uint16_t rangeScale;
-    uint16_t leftLimit;
-    uint16_t rightLimit;
+    base::Angle leftLimit;
+    base::Angle rightLimit;
     uint8_t adSpan;
     uint8_t adLow;
-    uint8_t initialGain;
+    double initialGain;
     uint8_t motorStepDelayTime;
-    uint8_t motorStepAngleSize;
-    uint16_t adInterval;
-    uint16_t numberOfBins;
+    base::Angle motorStepAngleSize;
+    double maximumDistance;
+    double resolution;
+    //uint16_t adInterval;
+    //uint16_t numberOfBins;
     uint16_t adcSetpointCh;
 #ifndef __orogen
 	SonarConfig():
@@ -60,15 +63,15 @@ struct SonarConfig{
 		applyoffset(false),
 		pingpong(false),
 		rangeScale(30),
-		leftLimit(1),
-		rightLimit(6399),
+		leftLimit(base::Angle::fromRad(M_PI)),
+		rightLimit(base::Angle::fromRad(M_PI)),
 		adSpan(81),
 		adLow(8),
-		initialGain(50),
+		initialGain(0.2),
 		motorStepDelayTime(25),
-		motorStepAngleSize(32),
-		adInterval(30),
-		numberOfBins(300),
+		motorStepAngleSize(base::Angle::fromRad(5.0/180.0*M_PI)),
+		maximumDistance(15.0),
+		resolution(0.1),
 		adcSetpointCh(0)
 	{};
 	bool operator!=(const SonarConfig &other) const{
@@ -89,8 +92,8 @@ struct SonarConfig{
 	    other.initialGain==initialGain &&
 	    other.motorStepDelayTime==motorStepDelayTime &&
 	    other.motorStepAngleSize==motorStepAngleSize &&
-	    other.adInterval==adInterval &&
-	    other.numberOfBins==numberOfBins &&
+	    other.maximumDistance==maximumDistance&&
+	    other.resolution==resolution&&
 	    other.adcSetpointCh==adcSetpointCh;
 	    return !b;
 	};
