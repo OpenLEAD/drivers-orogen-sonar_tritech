@@ -43,16 +43,12 @@ struct SonarConfig{
     uint16_t rangeScale;
     base::Angle leftLimit;
     base::Angle rightLimit;
-    uint8_t adSpan;
-    uint8_t adLow;
     double initialGain;
     uint8_t motorStepDelayTime;
-    base::Angle motorStepAngleSize;
-    double maximumDistance;
-    double resolution;
-    //uint16_t adInterval;
-    //uint16_t numberOfBins;
-    uint16_t adcSetpointCh;
+    base::Angle motorStepAngleSize; 
+    double maximumDistance; //in m
+    double resolution; //in m
+    double minDistance;
 #ifndef __orogen
 	SonarConfig():
 		adc8on(true),
@@ -65,14 +61,12 @@ struct SonarConfig{
 		rangeScale(30),
 		leftLimit(base::Angle::fromRad(M_PI)),
 		rightLimit(base::Angle::fromRad(M_PI)),
-		adSpan(81),
-		adLow(8),
 		initialGain(0.2),
 		motorStepDelayTime(25),
 		motorStepAngleSize(base::Angle::fromRad(5.0/180.0*M_PI)),
 		maximumDistance(15.0),
 		resolution(0.1),
-		adcSetpointCh(0)
+		minDistance(1.3785)
 	{};
 	bool operator!=(const SonarConfig &other) const{
 	    bool b = 
@@ -87,14 +81,12 @@ struct SonarConfig{
 	    other.rangeScale==rangeScale &&
 	    other.leftLimit==leftLimit &&
 	    other.rightLimit==rightLimit &&
-	    other.adSpan==adSpan &&
-	    other.adLow==adLow &&
 	    other.initialGain==initialGain &&
 	    other.motorStepDelayTime==motorStepDelayTime &&
 	    other.motorStepAngleSize==motorStepAngleSize &&
 	    other.maximumDistance==maximumDistance&&
 	    other.resolution==resolution&&
-	    other.adcSetpointCh==adcSetpointCh;
+	    other.minDistance==minDistance;
 	    return !b;
 	};
 #endif

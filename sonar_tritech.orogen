@@ -14,7 +14,9 @@ task_context "Micron" do
 	property("config", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
 
-        
+        property("speed_of_sound","double",1500).
+            doc("The Sound velocity in water in m/s, needed for correct Distance Caluclations")
+
 	input_port("config_port", "sensorConfig::SonarConfig").
             doc "Configuration Values for Sonar"
 	

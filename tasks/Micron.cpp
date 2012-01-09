@@ -47,19 +47,23 @@ void Micron::configureDevice()
     sensorConfig::SonarConfig data =  _config.get();
     int bins	=  data.maximumDistance/data.resolution;
 
+
     //1500m/s sound veolicity in water
     //twice the time
     //to microsecounds
     //value of one means 640microsecounds for the sonar
-    int ad	= (((data.resolution/1500.0)*2.0)*1e9)/640.0;
-
+    int ad	= (((data.resolution/_speed_of_sound.get())*2.0)*1e9)/640.0;
+    int lockoutTime = data.minDistance*_speed_of_sound.get()*1e6;
     if(
 	data.initialGain < 0.0 || data.initialGain > 1.0 ||
 	data.leftLimit.rad < -M_PI || data.leftLimit.rad > M_PI ||
 	data.rightLimit.rad < -M_PI || data.rightLimit.rad > M_PI ||
 	data.motorStepAngleSize.rad < 0 || data.motorStepAngleSize.rad / (0.05625/180.0*M_PI) > 255.0 ||
-	ad < 0 || ad > 1500 ||
-	bins < 0 || bins > 1500){
+	ad < 0 || ad > 1500 || //Maximum 1500 allowed
+	bins < 0 || bins > 1500 ||
+        data.minDistance < 0 || lockoutTime > 0xffff)
+        
+        {
 		return exception(INVALID_CONFIGURATION);
 	}
 
@@ -75,14 +79,15 @@ void Micron::configureDevice()
         data.rangeScale,
         ((data.leftLimit.rad+M_PI)/(M_PI*2.0))*6399.0,
         ((data.rightLimit.rad+M_PI)/(M_PI*2.0))*6399.0,
-        data.adSpan,
-        data.adLow,
+        81, //data.adSpan, //Does not effect the SonarHead only for the Windows GUI
+        8, //data.adLow, //Same as above
         data.initialGain,
         data.motorStepDelayTime,
         (data.motorStepAngleSize.rad/(M_PI*2.0))*6399.0,
         ad,
         bins,
-        data.adcSetpointCh
+        0,// Not used, depricated value data.adcSetpointCh
+        lockoutTime
     );
 }
 
@@ -161,7 +166,7 @@ void Micron::processSonarScan(const SonarScan *s){
 		baseScan.bearing     = base::Angle::fromRad(M_PI-(scan->bearing/6399.0*2.0*M_PI));
 
 		baseScan.beam  = scan->scanData;
-                baseScan.speed_of_sound = 1500;
+                baseScan.speed_of_sound = _speed_of_sound.get();
                 baseScan.beamwidth_vertical = 35.0/180.0*M_PI;
                 baseScan.beamwidth_horizontal = 3.0/180.0*M_PI;
 #if 0
