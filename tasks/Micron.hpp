@@ -1,29 +1,16 @@
 #ifndef SONAR_DRIVER_TASK_HPP
 #define SONAR_DRIVER_TASK_HPP
 
+#include "sonar_tritech/SeaNetMicron.hpp"
 #include "sonar_tritech/MicronBase.hpp"
-#include <fstream>
-#include <SeaNet.h>
-#include <string>
-#include <rtt/extras/FileDescriptorActivity.hpp>
-#include <Micron.h>
 
-
-namespace sonar_tritech {
-    class Micron : public SeaNet::SonarHandler, public MicronBase
+namespace sonar_tritech 
+{
+    class Micron : public MicronBase
     {
-    friend class MicronBase;
-    protected:
-    
-    
-    	void configureDevice();
-	RTT::extras::FileDescriptorActivity* activity;
-	sensorConfig::SonarConfig currentConfig;
-
     public:
         Micron(std::string const& name = "sonar_tritech::Micron");
 	
-
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the
          * component will stay in PreOperational. Otherwise, it goes into
@@ -37,7 +24,7 @@ namespace sonar_tritech {
          *     ...
          *   end
          */
-         bool configureHook();
+        bool configureHook();
 
         /** This hook is called by Orocos when the state machine transitions
          * from Stopped to Running. If it returns false, then the component will
@@ -86,13 +73,10 @@ namespace sonar_tritech {
          * before calling start() again.
          */
         void cleanupHook();
+
 	private:
-		SeaNet::Micron::Driver *sonar;
-                bool scanUpdated;
-		void processDepth(base::Time const& time, double depth);
-		void processSonarScan(const SonarScan *s);
-		bool configPhase;
-		int errorCnt;
+		sea_net::Micron micron;
+                sea_net::MicronConfig current_config;
     };
 }
 
