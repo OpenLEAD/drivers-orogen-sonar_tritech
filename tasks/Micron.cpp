@@ -16,6 +16,11 @@ bool Micron::configureHook()
         micron.openSerial(_port.value());
         micron.configure(_config.get(),_configure_timeout.get()*1000);
         current_config = _config.get();
+
+        //check if full duplex is set
+        //if not the user has to set it via tritech software
+        if(!micron.isFullDublex(1000))
+                std::cout << "WARNING: Micron is not using Full Dublex" << std::endl;
     }
     catch(std::runtime_error e)
     {
@@ -23,7 +28,6 @@ bool Micron::configureHook()
         std::cerr << e.what() << std::endl;
         return false;
     }
-
     return true;
 }
 
