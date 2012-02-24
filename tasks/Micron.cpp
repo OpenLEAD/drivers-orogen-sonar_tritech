@@ -1,10 +1,9 @@
 #include "Micron.hpp"
-#include <iodrivers_base/Timeout.hpp>
 
 using namespace sonar_tritech;
 
 Micron::Micron(std::string const& name)
-: MicronBase(name)
+: MicronBase(name),time_out_echo_sounder(0)
 {
 }
 
@@ -47,6 +46,8 @@ bool Micron::startHook()
         std::cerr << e.what() << std::endl;
         return false;
     }
+
+    time_out_echo_sounder = new iodrivers_base::Timeout(_echo_sounder_timeout.get());
     return true;
 }
 
@@ -85,12 +86,21 @@ void Micron::updateHook()
                         micron.decodeSonarBeam(sonar_beam);
                         _sonar_beam.write(sonar_beam);
                     }
+                case sea_net::mtAuxData:
+                    {
+                        base::samples::RigidBodyState state;
+                        micron.decodeEchoSounder(state);
+                        _ground_distance.write(state);
+                        time_out_echo_sounder->restart();
+                    }
                 default:
                     break;
                 }
             }
             if(time_out.elapsed())
-                throw std::runtime_error("");       //got to the catch block
+                throw std::runtime_error("Time for reading mtHeadData elapsed.");       //got to the catch block
+            if(_echo_sounder_timeout.get() > 0 && time_out_echo_sounder->elapsed())
+                throw std::runtime_error("Time for reading mtAuxData elased.");       //got to the catch block
         }
         catch(std::runtime_error e)
         {
@@ -100,7 +110,7 @@ void Micron::updateHook()
         }
     }
 
-    //trigger 
+    //trigger
     getActivity()->trigger();
 }
 
@@ -113,28 +123,7 @@ void Micron::stopHook()
 void Micron::cleanupHook()
 {
     micron.close();
+    time_out_echo_sounder = 0;
+    delete time_out_echo_sounder;
+    time_out_echo_sounder = NULL;
 }
-
-// void Micron::errorHook()
-// {
-// }
-
-
-//void Micron::processDepth(base::Time const& time, double value){
-//	sensorData::GroundDistanceReading groundData;
-//	groundData.stamp = time;
-//	groundData.depth = value;
-//	_CurrentGroundDistance.write(groundData);
-//}
-
-//	const GroundDistance *gd = dynamic_cast<const GroundDistance*>(s);
-//	if(gd){
-//            base::samples::RigidBodyState water_depth;
-//            water_depth.invalidate();
-//            water_depth.time = gd->time;
-//            water_depth.position[2] = gd->distance;
-//            water_depth.cov_position(2,2) = 0.2;
-//            _ground_distance.write(water_depth);
-//        }
-//}
-

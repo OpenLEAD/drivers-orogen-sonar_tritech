@@ -12,7 +12,7 @@ task_context "Micron" do
             doc "Configuration for Sonar"
 
         output_port("ground_distance", "base::samples::RigidBodyState").
-                doc "Current Ground Distance, if availible on AUX port"
+                doc "Current Ground Distance, if Microns DST EchoSounder is connected"
 
 	output_port("sonar_beam","base::samples::SonarBeam").
 		doc "Sonar beams"
@@ -25,12 +25,15 @@ task_context "Micron" do
             doc "timeout for writing to the serial port in seconds"
         property('configure_timeout', 'double', 10.0).
             doc "timeout for configuring the device in seconds"
+        property('echo_sounder_timeout', 'double', 0.0).
+            doc "timeout for the dst micron dst echo sounder. Set it to 0 if none is connected"
 	
 	error_states :IO_ERROR, :INVALID_CONFIGURATION
 	needs_configuration
 	fd_driven
 end
 
+#THIS IS NOT SUPPORTED AT THE MOMENT 
 #task_context "Profiling" do
 #	property("config", "sensorConfig::ProfilingConfig").
 #            doc "Configuration Values for Sonar"

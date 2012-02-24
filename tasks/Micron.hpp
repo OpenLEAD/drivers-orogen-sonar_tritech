@@ -3,6 +3,7 @@
 
 #include "sonar_tritech/SeaNetMicron.hpp"
 #include "sonar_tritech/MicronBase.hpp"
+#include <iodrivers_base/Timeout.hpp>
 
 namespace sonar_tritech 
 {
@@ -77,6 +78,8 @@ namespace sonar_tritech
 	private:
 		sea_net::Micron micron;
                 sea_net::MicronConfig current_config;
+                iodrivers_base::Timeout *time_out_echo_sounder;
+
     };
 }
 
