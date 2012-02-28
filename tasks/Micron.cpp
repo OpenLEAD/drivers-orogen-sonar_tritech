@@ -47,7 +47,7 @@ bool Micron::startHook()
         return false;
     }
 
-    time_out_echo_sounder = new iodrivers_base::Timeout(_echo_sounder_timeout.get());
+    time_out_echo_sounder = new iodrivers_base::Timeout(_echo_sounder_timeout.get()*1000);
     return true;
 }
 
@@ -102,7 +102,7 @@ void Micron::updateHook()
             if(time_out.elapsed())
                 throw std::runtime_error("Time for reading mtHeadData elapsed.");       //got to the catch block
             if(_echo_sounder_timeout.get() > 0 && time_out_echo_sounder->elapsed())
-                throw std::runtime_error("Time for reading mtAuxData elased.");       //got to the catch block
+                throw std::runtime_error("Time for reading mtAuxData elapsed.");       //got to the catch block
         }
         catch(std::runtime_error e)
         {
