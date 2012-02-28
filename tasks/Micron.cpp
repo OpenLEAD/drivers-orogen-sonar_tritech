@@ -85,6 +85,7 @@ void Micron::updateHook()
                         base::samples::SonarBeam sonar_beam;
                         micron.decodeSonarBeam(sonar_beam);
                         _sonar_beam.write(sonar_beam);
+                        break;
                     }
                 case sea_net::mtAuxData:
                     {
@@ -92,6 +93,7 @@ void Micron::updateHook()
                         micron.decodeEchoSounder(state);
                         _ground_distance.write(state);
                         time_out_echo_sounder->restart();
+                        break;
                     }
                 default:
                     break;
