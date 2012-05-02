@@ -91,6 +91,7 @@ void Micron::updateHook()
                     {
                         base::samples::RigidBodyState state;
                         micron.decodeEchoSounder(state);
+                        state.sourceFrame = _ground_frame.get();
                         _ground_distance.write(state);
                         time_out_echo_sounder->restart();
                         break;

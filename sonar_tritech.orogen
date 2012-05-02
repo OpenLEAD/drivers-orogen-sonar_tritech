@@ -16,7 +16,9 @@ task_context "Micron" do
 
 	output_port("sonar_beam","base::samples::SonarBeam").
 		doc "Sonar beams"
-	
+
+        property('ground_frame','/std/string','echosounder_frame')
+
 	property('port', '/std/string', "").
             doc 'the device port'
         property('read_timeout', 'double', 0.5).
