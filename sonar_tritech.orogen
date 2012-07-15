@@ -30,7 +30,7 @@ task_context "Micron" do
         property('echo_sounder_timeout', 'double', 0.0).
             doc "timeout for the dst micron dst echo sounder. Set it to 0 if none is connected"
 	
-	error_states :IO_ERROR, :INVALID_CONFIGURATION
+	fatal_states :IO_ERROR, :INVALID_CONFIGURATION
 	needs_configuration
 	fd_driven
 end
