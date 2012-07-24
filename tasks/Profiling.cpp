@@ -1,18 +1,13 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "Profiling.hpp"
+#include <iodrivers_base/Timeout.hpp>
 
 using namespace sonar_tritech;
 
 Profiling::Profiling(std::string const& name)
     : ProfilingBase(name)
 {
-	activity=0;
-	SeaNet::Profiling::headControl hc = SeaNet::Profiling::Driver::getDefaultHeadData();
-	sensorConfig::ProfilingConfig pc;
-	pc.config = hc;
-	_config.set(pc);
-	scanUpdated=false;
 }
 
 
@@ -23,54 +18,92 @@ Profiling::Profiling(std::string const& name)
 
 bool Profiling::configureHook()
 {
-    	if (! ProfilingBase::configureHook())
-        	return false;
-	
-	sonar = new SeaNet::Profiling::Driver();
-	if (!sonar->init(_port.value().c_str()))
-	    return false;
+    profiling.setWriteTimeout(1000*_write_timeout.get());
+    try
+    {
+        profiling.openSerial(_port.value());
+        profiling.configure(_config.get(),_configure_timeout.get()*1000);
+        profiling_config = _config.get();
 
-	activity =  getActivity<RTT::extras::FileDescriptorActivity>();
-	//configureDevice();
-	sonar->registerHandler(this);
-	sonar->sendHeadData(_config.get().config);
-	return true;
+        //check if full duplex is set
+        //if not the user has to set it via tritech software
+        if(!profiling.isFullDublex(1000))
+                std::cout << "WARNING: Micron is not using Full Dublex" << std::endl;
+    }
+    catch(std::runtime_error e)
+    {
+        std::cerr << "Cannot open port and configure the device!" << std::endl;
+        std::cerr << e.what() << std::endl;
+        return false;
+    }
+    return true;
 }
 
 bool Profiling::startHook()
 {
-	if (! ProfilingBase::startHook())
-        	return false;
-
-	if (activity)
-	{
-	    activity->watch(sonar->getFileDescriptor());
-	    activity->setTimeout(_timeout.get());
-	}
-    	sonar->requestData();
-	return true;
+    profiling.start();
+    try
+    {
+        //Wait up to one second. This is needed because the
+        //motor of the sonar is powering down after a while
+        //and it needs some time to send HeadData again
+        profiling.waitForPacket(sea_net::mtHeadData,10000);
+    }
+    catch(std::runtime_error e)
+    {
+        std::cerr << "Cannot start the device!" << std::endl;
+        std::cerr << e.what() << std::endl;
+        return false;
+    }
+    return true;
 }
 void Profiling::updateHook()
 {
-    ProfilingBase::updateHook();
-    if (activity && activity->hasError() && activity->hasTimeout()){
-    	printf("Fatal error: activityError: %s, hasTimeout: %s\n",activity->hasError()?"true":"false",activity->hasTimeout()?"true":"false");
-        return exception(IO_ERROR);
+    //check if the configuration has changed 
+    if(profiling_config != _config.get())
+    {
+        try
+        {
+            std::cout << "Reconfigure during operation!" << std::endl;
+            profiling.configure(_config.get(),_configure_timeout.get()*1000);
+            profiling_config = _config.get();
+        }
+        catch(std::runtime_error e)
+        {
+            std::cerr << "Cannot reconfigure the device!" << std::endl;
+            std::cerr << e.what() << std::endl;
+            return exception(IO_ERROR);
+        }
     }
-    sensorConfig::ProfilingConfig newConfig = _config.get(); 
-    if(newConfig != currentConfig){
-	sonar->sendHeadData(_config.get().config);
-	currentConfig = _config.get();
-	//printf("reconfiguring\n");	
-    }
-	
-    if (!sonar->processSerialData(_timeout.get())){
-       	sonar->requestData();
-    }else{
-	if(scanUpdated)
-		sonar->requestData();
+    else
+    {
+        try
+        {
+            iodrivers_base::Timeout time_out(_read_timeout.get()*10000);
+            sea_net::PacketType packet_type = sea_net::mtNull;
+            while(packet_type != sea_net::mtHeadData)
+            {
+                packet_type = profiling.readPacket(time_out.timeLeft());
+                if(packet_type == sea_net::mtHeadData)
+                {
+                    base::samples::LaserScan laser_scan;
+                    profiling.decodeScan(laser_scan);
+                    _profiling_scan.write(laser_scan);
+                }
+            }
+            if(time_out.elapsed())
+                throw std::runtime_error("Time for reading mtHeadData elapsed.");       //got to the catch block
+        }
+        catch(std::runtime_error e)
+        {
+            std::cerr << "Cannot read profiling scans!" << std::endl;
+            std::cerr << e.what() << std::endl;
+            return exception(IO_ERROR);
+        }
     }
 
+    //trigger
+    getActivity()->trigger(); //TODO use fd to trigger the task
 }
 // void Profiling::errorHook()
 // {
@@ -84,37 +117,3 @@ void Profiling::stopHook()
 // {
 //     ProfilingBase::cleanupHook();
 // }
-
-
-void Profiling::processSonarScan(const SonarScan *s){
-	const ProfilerScan *scan = dynamic_cast<const ProfilerScan*>(s);
-	if(scan){	
-
-		base::samples::LaserScan baseScan;
-		baseScan.time 	   = scan->time;
-		baseScan.start_angle = scan->leftLimit/6399.0*2.0*M_PI;
-		baseScan.minRange = 20; //Hardcoded 2 cm
-		baseScan.maxRange = 100000; //Hardcoded 100meter
-		baseScan.angular_resolution = scan->stepSize/6399.0*2.0*M_PI;
-		baseScan.start_angle += _offset.get();
-                baseScan.speed = 0;
-		printf("Stant angle: %f, resolution: %f\nScans: direction: %i\n head control: %i\n",baseScan.start_angle,baseScan.angular_resolution,scan->sweep_code,scan->hd_Ctrl);
-                if(scan->sweep_code,scan->hd_Ctrl & 0x04){ //Do we scan left or right?
-		    for(unsigned int i=0;i<scan->scanData.size();i++){
-		            double distance = scan->scanData[scan->scanData.size()-i]*1e-6*1500.0/2.0;//Time in microsecounds to secounds (1e-6) * time of water in speed (1500) / twice the way (2.0)
-			    baseScan.ranges.push_back(distance*1000); //To millimeters 
-			    printf(" %f",distance);
-		    }
-                }else{
-		    for(unsigned int i=0;i<scan->scanData.size();i++){
-		            double distance = scan->scanData[i]*1e-6*1500.0/2.0;//Time in microsecounds to secounds (1e-6) * time of water in speed (1500) / twice the way (2.0)
-			    baseScan.ranges.push_back(distance*1000); //To millimeters 
-			    printf(" %f",distance);
-		    }
-                    
-                }
-		printf("\n");
-		scanUpdated = true;
-		_Scan.write(baseScan);
-	}
-}

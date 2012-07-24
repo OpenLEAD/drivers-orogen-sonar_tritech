@@ -35,33 +35,31 @@ task_context "Micron" do
 	fd_driven
 end
 
-#THIS IS NOT SUPPORTED AT THE MOMENT 
-#task_context "Profiling" do
-#	property("config", "sensorConfig::ProfilingConfig").
-#            doc "Configuration Values for Sonar"
-#        
-#        property('offset','double',0)
-#
-##	input_port("config_port", "sensorConfig::ProfilingConfig").
-# #           doc "Configuration Values for Sonar"
-#
-#	output_port("Scan","base::samples::LaserScan").
-#		doc "Transmitting Sonar Data"
-#	
-#	property('port', '/std/string', "").
-#            doc 'the device port'
-#        property('timeout', 'int', 200).
-#            doc "timeout on the distance readings in milliseconds"
-#        
-#	fatal_states :IO_ERROR
-#
-#	needs_configuration
-#	fd_driven
-#end
-#
-#deployment "Profiling_Test_Application" do
-#	task("profiling","Profiling")
-#	do_not_install
-#	add_default_logger
-#end
+task_context "Profiling" do
+        property("config", "sea_net::ProfilingConfig").
+            doc "Configuration for Sonar"
+
+	output_port("profiling_scan","base::samples::LaserScan").
+            doc "Transmitting Sonar Data"
+	
+        property('port', '/std/string', "").
+            doc 'the device port'
+        property('read_timeout', 'double', 0.5).
+            doc "timeout for reading sonar beams in seconds"
+        property('write_timeout', 'double', 0.1).
+            doc "timeout for writing to the serial port in seconds"
+        property('configure_timeout', 'double', 10.0).
+            doc "timeout for configuring the device in seconds"
+        
+	fatal_states :IO_ERROR, :INVALID_CONFIGURATION
+
+	needs_configuration
+	fd_driven
+end
+
+deployment "Profiling_Test_Application" do
+	task("profiling","Profiling")
+	do_not_install
+	add_default_logger
+end
 
