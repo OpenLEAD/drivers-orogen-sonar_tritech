@@ -35,6 +35,25 @@ task_context "Micron" do
 	fd_driven
 end
 
+task_context "Echosounder" do
+        output_port("ground_distance", "base::samples::RigidBodyState").
+                doc "Current Ground Distance"
+
+        property('ground_frame','/std/string','echosounder_frame')
+	
+        property('port', '/std/string', "").
+            doc 'the device port'
+        property('read_timeout', 'double', 0.5).
+            doc "timeout for reading sonar beams in seconds"
+        property('echo_sounder_timeout', 'double', 1.0).
+            doc "timeout for the dst micron dst echo sounder. Set it to 0 if none is connected"
+	
+        fatal_states :IO_ERROR
+	needs_configuration
+	fd_driven
+end
+
+
 #THIS IS NOT SUPPORTED AT THE MOMENT 
 #task_context "Profiling" do
 #	property("config", "sensorConfig::ProfilingConfig").
