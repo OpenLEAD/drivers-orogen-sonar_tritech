@@ -2,87 +2,85 @@ name "sonar_tritech"
 version "0.1"
 
 #Checkt Package Config nach include pfaden (hier z.B. Sonar.h
-import_types_from "base"
-import_types_from "SonarConfigTypes.hpp"
-import_types_from "GroundDistanceReading.hpp"
+using_library "sonar_tritech"
 
-#Er linkt gegen die lib...
-using_library "seanet"
-#using_library "avalontools"
+import_types_from "base"
+import_types_from "sonar_tritech/SeaNetTypes.hpp"
 
 task_context "Micron" do
-	property("config", "sensorConfig::SonarConfig").
-            doc "Configuration Values for Sonar"
-
-        
-	input_port("config_port", "sensorConfig::SonarConfig").
-            doc "Configuration Values for Sonar"
-	
-	#output_port("debug_config", "sensorConfig::SonarConfig").
-        #    doc "Debug Configuration output"
-	
-        output_port("pts_subdevice", "/std/string")
+	property("config", "sea_net::MicronConfig").
+            doc "Configuration for Sonar"
 
         output_port("ground_distance", "base::samples::RigidBodyState").
-                doc "Current Ground Distance, if availible on AUX port"
+                doc "Current Ground Distance, if Microns DST EchoSounder is connected"
 
-	output_port("BaseScan","base::samples::SonarBeam").
-		doc "Transmitting Sonar Data"
-	
-	output_port("CurrentGroundDistance","sensorData::GroundDistanceReading").
-		doc "Current Ground Distance"
-    
+	output_port("sonar_beam","base::samples::SonarBeam").
+		doc "Sonar beams"
+
+        property('ground_frame','/std/string','echosounder_frame')
+
 	property('port', '/std/string', "").
             doc 'the device port'
-        property('timeout', 'int', 200).
-            doc "timeout on the distance readings in milliseconds"
+        property('read_timeout', 'double', 0.5).
+            doc "timeout for reading sonar beams in seconds"
+        property('write_timeout', 'double', 0.1).
+            doc "timeout for writing to the serial port in seconds"
+        property('configure_timeout', 'double', 10.0).
+            doc "timeout for configuring the device in seconds"
+        property('echo_sounder_timeout', 'double', 0.0).
+            doc "timeout for the dst micron dst echo sounder. Set it to 0 if none is connected"
 	
 	fatal_states :IO_ERROR, :INVALID_CONFIGURATION
-
 	needs_configuration
 	fd_driven
 end
 
-task_context "Profiling" do
-	property("config", "sensorConfig::ProfilingConfig").
-            doc "Configuration Values for Sonar"
-        
-        property('offset','double',0)
+task_context "Echosounder" do
+        output_port("ground_distance", "base::samples::RigidBodyState").
+                doc "Current Ground Distance"
 
-#	input_port("config_port", "sensorConfig::ProfilingConfig").
- #           doc "Configuration Values for Sonar"
-
-	output_port("Scan","base::samples::LaserScan").
-		doc "Transmitting Sonar Data"
+        property('ground_frame','/std/string','echosounder_frame')
 	
-	property('port', '/std/string', "").
+        property('port', '/std/string', "").
             doc 'the device port'
-        property('timeout', 'int', 200).
-            doc "timeout on the distance readings in milliseconds"
-        
-	fatal_states :IO_ERROR
-
+        property('read_timeout', 'double', 0.5).
+            doc "timeout for reading sonar beams in seconds"
+        property('echo_sounder_timeout', 'double', 1.0).
+            doc "timeout for the dst micron dst echo sounder. Set it to 0 if none is connected"
+	
+        fatal_states :IO_ERROR
 	needs_configuration
 	fd_driven
 end
 
-deployment "Profiling_Test_Application" do
-	task("profiling","Profiling")
-	do_not_install
-	add_default_logger
-end
 
-deployment "sonar_driver_micron_task_application" do
-	bla = task("SonarDriverMicronTask","Micron")
-	do_not_install
-	
-	#triggered #nur wenn nur wenn daten aufrufen
-	#
-	add_default_logger
-
-	#hängt nen task browser an (Was auch immer tolles)	
-	if !corba_enabled?
-		browse bla
-	end
-end
+#THIS IS NOT SUPPORTED AT THE MOMENT 
+#task_context "Profiling" do
+#	property("config", "sensorConfig::ProfilingConfig").
+#            doc "Configuration Values for Sonar"
+#        
+#        property('offset','double',0)
+#
+##	input_port("config_port", "sensorConfig::ProfilingConfig").
+# #           doc "Configuration Values for Sonar"
+#
+#	output_port("Scan","base::samples::LaserScan").
+#		doc "Transmitting Sonar Data"
+#	
+#	property('port', '/std/string', "").
+#            doc 'the device port'
+#        property('timeout', 'int', 200).
+#            doc "timeout on the distance readings in milliseconds"
+#        
+#	fatal_states :IO_ERROR
+#
+#	needs_configuration
+#	fd_driven
+#end
+#
+#deployment "Profiling_Test_Application" do
+#	task("profiling","Profiling")
+#	do_not_install
+#	add_default_logger
+#end
 
