@@ -21,6 +21,8 @@ task_context "Micron" do
 
 	property('port', '/std/string', "").
             doc 'the device port'
+	property('baudrate', 'int', 115200).
+            doc 'baudrate of the device port'
         property('read_timeout', 'double', 0.5).
             doc "timeout for reading sonar beams in seconds"
         property('write_timeout', 'double', 0.1).
@@ -44,6 +46,8 @@ task_context "Profiling" do
 	
         property('port', '/std/string', "").
             doc 'the device port'
+	property('baudrate', 'int', 115200).
+            doc 'baudrate of the device port'
         property('read_timeout', 'double', 0.5).
             doc "timeout for reading sonar beams in seconds"
         property('write_timeout', 'double', 0.1).
