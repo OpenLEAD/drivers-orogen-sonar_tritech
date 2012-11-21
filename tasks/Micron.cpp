@@ -12,7 +12,7 @@ bool Micron::configureHook()
     micron.setWriteTimeout(1000*_write_timeout.get());
     try
     {
-        micron.openSerial(_port.value());
+        micron.openSerial(_port.value(), _baudrate.value());
         micron.configure(_config.get(),_configure_timeout.get()*1000);
         current_config = _config.get();
 

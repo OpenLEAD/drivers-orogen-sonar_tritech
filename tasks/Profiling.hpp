@@ -4,20 +4,16 @@
 #define SONAR_DRIVER_PROFILING_TASK_HPP
 
 #include "sonar_tritech/ProfilingBase.hpp"
-#include <Profiling.h>
-#include <rtt/extras/FileDescriptorActivity.hpp>
+#include <sonar_tritech/SeaNetProfiling.hpp>
 
 
 namespace sonar_tritech {
-    class Profiling : public SeaNet::SonarHandler, public ProfilingBase
+    class Profiling : public ProfilingBase
     {
-	friend class ProfilingBase;
     protected:
-	SeaNet::Profiling::Driver *sonar;
-	bool scanUpdated;
-	void processSonarScan(const SonarScan *s);
-	RTT::extras::FileDescriptorActivity* activity;
-	sensorConfig::ProfilingConfig currentConfig;
+        sea_net::Profiling profiling;
+        sea_net::ProfilingConfig profiling_config;
+        
     public:
         Profiling(std::string const& name = "sonar_tritech::Profiling");
 
