@@ -7,6 +7,26 @@ Micron::Micron(std::string const& name)
 {
 }
 
+
+bool Micron::setConfig(::sea_net::MicronConfig const & value)
+{
+        try
+        {
+            std::cout << "Reconfigure during operation!" << std::endl;
+            micron.configure(_config.get(),_configure_timeout.get()*1000);
+        }
+        catch(std::runtime_error e)
+        {
+            std::cerr << "Cannot reconfigure the device!" << std::endl;
+            std::cerr << e.what() << std::endl;
+            return false;
+//            return exception(IO_ERROR);
+        }
+
+  	//Call the base function, DO-NOT Remove
+	return(sonar_tritech::MicronBase::setConfig(value));
+}
+
 bool Micron::configureHook()
 {
     micron.setWriteTimeout(1000*_write_timeout.get());
@@ -14,7 +34,6 @@ bool Micron::configureHook()
     {
         micron.openSerial(_port.value(), _baudrate.value());
         micron.configure(_config.get(),_configure_timeout.get()*1000);
-        current_config = _config.get();
 
         //check if full duplex is set
         //if not the user has to set it via tritech software
@@ -53,23 +72,6 @@ bool Micron::startHook()
 
 void Micron::updateHook()
 {
-    //check if the configuration has changed 
-    if(current_config != _config.get())
-    {
-        try
-        {
-            std::cout << "Reconfigure during operation!" << std::endl;
-            micron.configure(_config.get(),_configure_timeout.get()*1000);
-            current_config = _config.get();
-        }
-        catch(std::runtime_error e)
-        {
-            std::cerr << "Cannot reconfigure the device!" << std::endl;
-            std::cerr << e.what() << std::endl;
-            return exception(IO_ERROR);
-        }
-    }
-    else
     {
         try
         {

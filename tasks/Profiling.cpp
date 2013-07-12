@@ -11,6 +11,23 @@ Profiling::Profiling(std::string const& name)
 }
 
 
+bool Profiling::setConfig(::sea_net::ProfilingConfig const & value)
+{
+        try
+        {
+            std::cout << "Reconfigure during operation!" << std::endl;
+            profiling.configure(_config.get(),_configure_timeout.get()*1000);
+        }
+        catch(std::runtime_error e)
+        {
+            std::cerr << "Cannot reconfigure the device!" << std::endl;
+            std::cerr << e.what() << std::endl;
+            return false;
+//            return exception(IO_ERROR);
+        }
+
+	return(sonar_tritech::ProfilingBase::setConfig(value));
+}
 
 /// The following lines are template definitions for the various state machine
 // hooks defined by Orocos::RTT. See Profiling.hpp for more detailed
@@ -23,7 +40,6 @@ bool Profiling::configureHook()
     {
         profiling.openSerial(_port.value(), _baudrate.value());
         profiling.configure(_config.get(),_configure_timeout.get()*1000);
-        profiling_config = _config.get();
 
         //check if full duplex is set
         //if not the user has to set it via tritech software
@@ -59,23 +75,6 @@ bool Profiling::startHook()
 }
 void Profiling::updateHook()
 {
-    //check if the configuration has changed 
-    if(profiling_config != _config.get())
-    {
-        try
-        {
-            std::cout << "Reconfigure during operation!" << std::endl;
-            profiling.configure(_config.get(),_configure_timeout.get()*1000);
-            profiling_config = _config.get();
-        }
-        catch(std::runtime_error e)
-        {
-            std::cerr << "Cannot reconfigure the device!" << std::endl;
-            std::cerr << e.what() << std::endl;
-            return exception(IO_ERROR);
-        }
-    }
-    else
     {
         try
         {
@@ -86,9 +85,15 @@ void Profiling::updateHook()
                 packet_type = profiling.readPacket(time_out.timeLeft());
                 if(packet_type == sea_net::mtHeadData)
                 {
-                    base::samples::LaserScan laser_scan;
+                    laser_scan.ranges.clear();
+//                    base::samples::LaserScan laser_scan;
                     profiling.decodeScan(laser_scan);
                     _profiling_scan.write(laser_scan);
+                    printf("in scan: ");
+                    for(int i=0;i< laser_scan.ranges.size();i++){
+                        printf(" %f",laser_scan.ranges[i]);
+                    }
+                    printf("\n");
                 }
             }
             if(time_out.elapsed())

@@ -9,7 +9,8 @@ import_types_from "sonar_tritech/SeaNetTypes.hpp"
 
 task_context "Micron" do
 	property("config", "sea_net::MicronConfig").
-            doc "Configuration for Sonar"
+            doc("Configuration for Sonar").
+            dynamic
 
         output_port("ground_distance", "base::samples::RigidBodyState").
                 doc "Current Ground Distance, if Microns DST EchoSounder is connected"
@@ -58,7 +59,8 @@ end
 
 task_context "Profiling" do
         property("config", "sea_net::ProfilingConfig").
-            doc "Configuration for Sonar"
+            doc("Configuration for Sonar").
+            dynamic
 
 	output_port("profiling_scan","base::samples::LaserScan").
             doc "Transmitting Sonar Data"

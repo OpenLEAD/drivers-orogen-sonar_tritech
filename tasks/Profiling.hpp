@@ -12,7 +12,11 @@ namespace sonar_tritech {
     {
     protected:
         sea_net::Profiling profiling;
-        sea_net::ProfilingConfig profiling_config;
+        base::samples::LaserScan laser_scan;
+        
+        /* Dynamic Property setter of config
+         */
+        virtual bool setConfig(::sea_net::ProfilingConfig const & value);
         
     public:
         Profiling(std::string const& name = "sonar_tritech::Profiling");

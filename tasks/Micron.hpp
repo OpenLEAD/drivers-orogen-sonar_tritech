@@ -9,6 +9,11 @@ namespace sonar_tritech
 {
     class Micron : public MicronBase
     {
+    protected:
+        /* Dynamic Property setter of config
+         */
+        virtual bool setConfig(::sea_net::MicronConfig const & value);
+    
     public:
         Micron(std::string const& name = "sonar_tritech::Micron");
 	
@@ -77,7 +82,6 @@ namespace sonar_tritech
 
 	private:
 		sea_net::Micron micron;
-                sea_net::MicronConfig current_config;
                 iodrivers_base::Timeout *time_out_echo_sounder;
 
     };
