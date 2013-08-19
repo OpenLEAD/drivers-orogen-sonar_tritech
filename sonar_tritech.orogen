@@ -46,10 +46,10 @@ task_context "Echosounder" do
 	
         property('port', '/std/string', "").
             doc 'the device port'
-        property('read_timeout', 'double', 0.5).
-            doc "timeout for reading sonar beams in seconds"
+        property('baudrate', 'int', 115200)
+
         property('echo_sounder_timeout', 'double', 1.0).
-            doc "timeout for the dst micron dst echo sounder. Set it to 0 if none is connected"
+            doc "timeout for the dst micron dst echo sounder."
 	
         fatal_states :IO_ERROR
 

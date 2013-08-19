@@ -13,20 +13,24 @@ Profiling::Profiling(std::string const& name)
 
 bool Profiling::setConfig(::sea_net::ProfilingConfig const & value)
 {
-        try
-        {
-            std::cout << "Reconfigure during operation!" << std::endl;
-            profiling.configure(_config.get(),_configure_timeout.get()*1000);
-        }
-        catch(std::runtime_error e)
-        {
-            std::cerr << "Cannot reconfigure the device!" << std::endl;
-            std::cerr << e.what() << std::endl;
-            return false;
-//            return exception(IO_ERROR);
+        if(!isRunning()){
+            std::cout << "Got Configuration even the device is not running (yet) cacheing it!" << std::endl;
+        }else{
+            try
+            {
+                std::cout << "Reconfigure during operation!" << std::endl;
+                profiling.configure(_config.get(),_configure_timeout.get()*1000);
+            }
+            catch(std::runtime_error e)
+            {
+                std::cerr << "Cannot reconfigure the device!" << std::endl;
+                std::cerr << e.what() << std::endl;
+                return false;
+    //            return exception(IO_ERROR);
+            }
         }
 
-	return(sonar_tritech::ProfilingBase::setConfig(value));
+        return(sonar_tritech::ProfilingBase::setConfig(value));
 }
 
 /// The following lines are template definitions for the various state machine

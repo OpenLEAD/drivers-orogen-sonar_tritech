@@ -5,6 +5,10 @@
 
 #include "sonar_tritech/EchosounderBase.hpp"
 
+namespace sea_net{
+    class Echosounder;
+};
+
 namespace sonar_tritech {
 
     /*! \class Echosounder 
@@ -25,7 +29,7 @@ namespace sonar_tritech {
     {
 	friend class EchosounderBase;
     protected:
-
+        sea_net::Echosounder *driver;
 
 
     public:
@@ -60,14 +64,14 @@ namespace sonar_tritech {
          end
          \endverbatim
          */
-        // bool configureHook();
+        bool configureHook();
 
         /** This hook is called by Orocos when the state machine transitions
          * from Stopped to Running. If it returns false, then the component will
          * stay in Stopped. Otherwise, it goes into Running and updateHook()
          * will be called.
          */
-        // bool startHook();
+         bool startHook();
 
         /** This hook is called by Orocos when the component is in the Running
          * state, at each activity step. Here, the activity gives the "ticks"
@@ -83,7 +87,7 @@ namespace sonar_tritech {
          * component is stopped and recover() needs to be called before starting
          * it again. Finally, FatalError cannot be recovered.
          */
-        // void updateHook();
+         void updateHook();
 
         /** This hook is called by Orocos when the component is in the
          * RunTimeError state, at each activity step. See the discussion in

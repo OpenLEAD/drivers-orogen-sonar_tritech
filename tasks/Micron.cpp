@@ -10,17 +10,21 @@ Micron::Micron(std::string const& name)
 
 bool Micron::setConfig(::sea_net::MicronConfig const & value)
 {
-        try
-        {
-            std::cout << "Reconfigure during operation!" << std::endl;
-            micron.configure(_config.get(),_configure_timeout.get()*1000);
-        }
-        catch(std::runtime_error e)
-        {
-            std::cerr << "Cannot reconfigure the device!" << std::endl;
-            std::cerr << e.what() << std::endl;
-            return false;
-//            return exception(IO_ERROR);
+        if(!isRunning()){
+            std::cout << "Got Configuration even the device is not running (yet) cacheing it!" << std::endl;
+        }else{
+            try
+            {
+                std::cout << "Reconfigure during operation!" << std::endl;
+                micron.configure(_config.get(),_configure_timeout.get()*1000);
+            }
+            catch(std::runtime_error e)
+            {
+                std::cerr << "Cannot reconfigure the device!" << std::endl;
+                std::cerr << e.what() << std::endl;
+                return false;
+    //            return exception(IO_ERROR);
+            }
         }
 
   	//Call the base function, DO-NOT Remove
