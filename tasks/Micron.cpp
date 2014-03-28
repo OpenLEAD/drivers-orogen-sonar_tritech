@@ -16,7 +16,7 @@ bool Micron::setConfig(::sea_net::MicronConfig const & value)
             try
             {
                 std::cout << "Reconfigure during operation!" << std::endl;
-                micron.configure(_config.get(),_configure_timeout.get()*1000);
+                micron.configure(value,_configure_timeout.get()*1000);
             }
             catch(std::runtime_error e)
             {
