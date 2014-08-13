@@ -1,12 +1,7 @@
 <package>
-  <description brief="Tritech Micron and Ecosounder Orocos Module"></description>
-  <author>Matthias Goldhoorn/matthias.goldhoorn@dfki.de</author> 
-  <license></license>
-  <url>http://</url>
-  <logo>http://</logo>
-  <export>
-    <cpp cflags="" lflags="" />
-  </export>
+  <description brief="Rock components for the drivers/sonar_tritech drivers"></description>
+  <maintainer>Matthias Goldhoorn/matthias.goldhoorn@dfki.de</maintainer> 
+  <license>LGPLv2 or later</license>
   <depend package="drivers/sonar_tritech"/>
   <depend package="base/types"/>
   <depend package="base/orogen/types"/>
