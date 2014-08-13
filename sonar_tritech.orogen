@@ -1,41 +1,43 @@
 name "sonar_tritech"
 version "0.1"
 
-#Checkt Package Config nach include pfaden (hier z.B. Sonar.h
 using_library "sonar_tritech"
 
 import_types_from "base"
 import_types_from "sonar_tritech/SeaNetTypes.hpp"
 
 task_context "Micron" do
-	property("config", "sea_net::MicronConfig").
-            doc("Configuration for Sonar").
-            dynamic
+    needs_configuration
 
-        output_port("ground_distance", "base::samples::RigidBodyState").
-                doc "Current Ground Distance, if Microns DST EchoSounder is connected"
+    # The sonar configuration
+    property("config", "sea_net::MicronConfig").
+        dynamic
 
-	output_port("sonar_beam","base::samples::SonarBeam").
-		doc "Sonar beams"
+    # The device's serial port.
+    property('port', '/std/string', "")
+    # THe device's serial baudrate
+    property('baudrate', 'int', 115200)
+    # The timeout to read sonar beams, in seconds
+    property('read_timeout', 'double', 0.5)
+    # The timeout to write commands to the sonar, in seconds
+    property('write_timeout', 'double', 0.1)
+    # The timeout to configure the sonar, in seconds
+    property('configure_timeout', 'double', 10.0)
 
-        property('ground_frame','/std/string','echosounder_frame')
+    # The sonar readings
+    output_port("sonar_beam","base::samples::SonarBeam")
 
-	property('port', '/std/string', "").
-            doc 'the device port'
-	property('baudrate', 'int', 115200).
-            doc 'baudrate of the device port'
-        property('read_timeout', 'double', 0.5).
-            doc "timeout for reading sonar beams in seconds"
-        property('write_timeout', 'double', 0.1).
-            doc "timeout for writing to the serial port in seconds"
-        property('configure_timeout', 'double', 10.0).
-            doc "timeout for configuring the device in seconds"
-        property('echo_sounder_timeout', 'double', 0.0).
-            doc "timeout for the dst micron dst echo sounder. Set it to 0 if none is connected"
+    # The expected time between two readings from the DST EchoSounder connected
+    # to the aux port. Set to 0 if there is none connected
+    property('echo_sounder_timeout', 'double', 0.0)
+    # The ground frame for the data produced in the ground_distance port
+    property('ground_frame','/std/string','echosounder_frame')
+    # The current ground distance if a Micron DST EchoSounder is connected to
+    # the aux port
+    output_port("ground_distance", "base::samples::RigidBodyState")
 	
-	fatal_states :IO_ERROR, :INVALID_CONFIGURATION
-	needs_configuration
-	fd_driven
+    exception_states :IO_ERROR, :INVALID_CONFIGURATION
+    fd_driven
 end
 
 task_context "Echosounder" do
