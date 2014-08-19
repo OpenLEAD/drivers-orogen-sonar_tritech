@@ -10,129 +10,90 @@ Micron::Micron(std::string const& name)
 
 bool Micron::setConfig(::sea_net::MicronConfig const & value)
 {
-        if(!isRunning()){
-            std::cout << "Got Configuration even the device is not running (yet) cacheing it!" << std::endl;
-        }else{
-            try
-            {
-                std::cout << "Reconfigure during operation!" << std::endl;
-                micron.configure(value,_configure_timeout.get()*1000);
-            }
-            catch(std::runtime_error e)
-            {
-                std::cerr << "Cannot reconfigure the device!" << std::endl;
-                std::cerr << e.what() << std::endl;
-                return false;
-    //            return exception(IO_ERROR);
-            }
-        }
+    // Need to read the pending data packet first
+    if (micron.hasPendingData())
+        micron.receiveData(_io_read_timeout.get().toMilliseconds());
 
-  	//Call the base function, DO-NOT Remove
-	return(sonar_tritech::MicronBase::setConfig(value));
+    micron.configure(value, _configure_timeout.get()*1000);
+
+    //Call the base function, DO-NOT Remove
+    return(sonar_tritech::MicronBase::setConfig(value));
 }
 
 bool Micron::configureHook()
 {
-    micron.setWriteTimeout(1000*_write_timeout.get());
-    try
-    {
+    if (!_port.value().empty())
         micron.openSerial(_port.value(), _baudrate.value());
-        micron.configure(_config.get(),_configure_timeout.get()*1000);
+    else if (!_io_port.value().empty())
+        micron.openURI(_io_port);
 
-        //check if full duplex is set
-        //if not the user has to set it via tritech software
-        if(!micron.isFullDublex(1000))
-                std::cout << "WARNING: Micron is not using Full Dublex" << std::endl;
-    }
-    catch(std::runtime_error e)
-    {
-        std::cerr << "Cannot open port and configure the device!" << std::endl;
-        std::cerr << e.what() << std::endl;
-        return false;
-    }
-    return true;
+    micron.configure(_config.get(), _configure_timeout.get()*1000);
+
+    //check if full duplex is set
+    //if not the user has to set it via tritech software
+    if(!micron.isFullDuplex(1000))
+        std::cout << "WARNING: Micron is not using Full Duplex" << std::endl;
+
+    setDriver(&micron);
+    return MicronBase::configureHook();
 }
 
 bool Micron::startHook()
 {
-    micron.start();
-    try
+    //Wait up to one second. This is needed because the
+    //motor of the sonar is powering down after a while
+    //and it needs some time to send HeadData again
+    micron.requestData();
+    micron.receiveData(1000);
+
+    time_out_echo_sounder =
+        iodrivers_base::Timeout(_echo_sounder_timeout.get()*1000);
+
+    // Start pulling
+    micron.requestData();
+    return MicronBase::startHook();
+}
+
+void Micron::processIO()
+{
+    sea_net::PacketType packet_type = micron.readPacket(_io_read_timeout.get().toMilliseconds());
+    if (packet_type == sea_net::mtHeadData)
     {
-        //Wait up to one second. This is needed because the
-        //motor of the sonar is powering down after a while
-        //and it needs some time to send HeadData again
-        micron.waitForPacket(sea_net::mtHeadData,1000);
+        base::samples::SonarBeam sonar_beam;
+        micron.decodeSonarBeam(sonar_beam);
+        _sonar_beam.write(sonar_beam);
+        micron.requestData();
     }
-    catch(std::runtime_error e)
+    else if (packet_type == sea_net::mtAuxData)
     {
-        std::cerr << "Cannot start the device!" << std::endl;
-        std::cerr << e.what() << std::endl;
-        return false;
+        processEchoSounderPacket();
     }
 
-    time_out_echo_sounder = new iodrivers_base::Timeout(_echo_sounder_timeout.get()*1000);
-    return true;
+    if (time_out_echo_sounder.elapsed())
+        exception(ECHO_SOUNDER_TIMEOUT);
+}
+
+void Micron::processEchoSounderPacket()
+{
+    base::samples::RigidBodyState state;
+    micron.decodeEchoSounder(state);
+    state.sourceFrame = _ground_frame.get();
+    _ground_distance.write(state);
+    time_out_echo_sounder.restart();
 }
 
 void Micron::updateHook()
 {
-    {
-        try
-        {
-            iodrivers_base::Timeout time_out(_read_timeout.get()*1000);
-            sea_net::PacketType packet_type = sea_net::mtNull;
-            while(packet_type != sea_net::mtHeadData)
-            {
-                packet_type = micron.readPacket(time_out.timeLeft());
-                switch(packet_type)
-                {
-                case sea_net::mtHeadData:
-                    {
-                        base::samples::SonarBeam sonar_beam;
-                        micron.decodeSonarBeam(sonar_beam);
-                        _sonar_beam.write(sonar_beam);
-                        break;
-                    }
-                case sea_net::mtAuxData:
-                    {
-                        base::samples::RigidBodyState state;
-                        micron.decodeEchoSounder(state);
-                        state.sourceFrame = _ground_frame.get();
-                        _ground_distance.write(state);
-                        time_out_echo_sounder->restart();
-                        break;
-                    }
-                default:
-                    break;
-                }
-            }
-            if(time_out.elapsed())
-                throw std::runtime_error("Time for reading mtHeadData elapsed.");       //got to the catch block
-            if(_echo_sounder_timeout.get() > 0 && time_out_echo_sounder->elapsed())
-                throw std::runtime_error("Time for reading mtAuxData elapsed.");       //got to the catch block
-        }
-        catch(std::runtime_error e)
-        {
-            std::cerr << "Cannot read sonar beams!" << std::endl;
-            std::cerr << e.what() << std::endl;
-            return exception(IO_ERROR);
-        }
-    }
-
-    //trigger
-    getActivity()->trigger();
+    MicronBase::updateHook();
 }
-
 
 void Micron::stopHook()
 {
-    micron.stop();
+    MicronBase::stopHook();
 }
 
 void Micron::cleanupHook()
 {
-    micron.close();
-    time_out_echo_sounder = 0;
-    delete time_out_echo_sounder;
-    time_out_echo_sounder = NULL;
+    MicronBase::cleanupHook();
 }
+

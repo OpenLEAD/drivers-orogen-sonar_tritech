@@ -59,6 +59,10 @@ namespace sonar_tritech
          * instance, a periodic update), then this set is empty.
          */
          void updateHook();
+
+         void processIO();
+
+         void processEchoSounderPacket();
         
 
         /** This hook is called by Orocos when the component is in the
@@ -82,7 +86,7 @@ namespace sonar_tritech
 
 	private:
 		sea_net::Micron micron;
-                iodrivers_base::Timeout *time_out_echo_sounder;
+                iodrivers_base::Timeout time_out_echo_sounder;
 
     };
 }

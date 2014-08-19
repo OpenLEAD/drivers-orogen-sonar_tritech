@@ -3,6 +3,7 @@
   <maintainer>Matthias Goldhoorn/matthias.goldhoorn@dfki.de</maintainer> 
   <license>LGPLv2 or later</license>
   <depend package="drivers/sonar_tritech"/>
+  <depend package="drivers/orogen/iodrivers_base"/>
   <depend package="base/types"/>
   <depend package="base/orogen/types"/>
   <depend package="tools/logger"/>
