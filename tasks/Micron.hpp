@@ -84,9 +84,10 @@ namespace sonar_tritech
          */
         void cleanupHook();
 
-	private:
-		sea_net::Micron micron;
-                iodrivers_base::Timeout time_out_echo_sounder;
+    private:
+        sea_net::Micron micron;
+        bool hasEchoSounderTimeout;
+        iodrivers_base::Timeout timeoutEchoSounder;
 
     };
 }

@@ -3,7 +3,7 @@
 using namespace sonar_tritech;
 
 Micron::Micron(std::string const& name)
-: MicronBase(name),time_out_echo_sounder(0)
+: MicronBase(name),hasEchoSounderTimeout(false),timeoutEchoSounder(0)
 {
 }
 
@@ -46,7 +46,9 @@ bool Micron::startHook()
     micron.requestData();
     micron.receiveData(1000);
 
-    time_out_echo_sounder =
+    int echoSounderTimeout = _echo_sounder_timeout.get();
+    hasEchoSounderTimeout = (echoSounderTimeout != 0);
+    timeoutEchoSounder =
         iodrivers_base::Timeout(_echo_sounder_timeout.get()*1000);
 
     // Start pulling
@@ -69,7 +71,7 @@ void Micron::processIO()
         processEchoSounderPacket();
     }
 
-    if (time_out_echo_sounder.elapsed())
+    if (hasEchoSounderTimeout && timeoutEchoSounder.elapsed())
         exception(ECHO_SOUNDER_TIMEOUT);
 }
 
@@ -79,7 +81,7 @@ void Micron::processEchoSounderPacket()
     micron.decodeEchoSounder(state);
     state.sourceFrame = _ground_frame.get();
     _ground_distance.write(state);
-    time_out_echo_sounder.restart();
+    timeoutEchoSounder.restart();
 }
 
 void Micron::updateHook()
