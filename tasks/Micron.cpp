@@ -26,6 +26,10 @@ bool Micron::configureHook()
         micron.openSerial(_port.value(), _baudrate.value());
     else if (!_io_port.value().empty())
         micron.openURI(_io_port);
+    setDriver(&micron);
+
+    if (!MicronBase::configureHook())
+        return false;
 
     micron.configure(_config.get(), _configure_timeout.get()*1000);
 
@@ -34,8 +38,7 @@ bool Micron::configureHook()
     if(!micron.isFullDuplex(1000))
         std::cout << "WARNING: Micron is not using Full Duplex" << std::endl;
 
-    setDriver(&micron);
-    return MicronBase::configureHook();
+    return true;
 }
 
 bool Micron::startHook()
