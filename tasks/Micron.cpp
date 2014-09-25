@@ -56,22 +56,28 @@ bool Micron::configureHook()
 bool Micron::startHook()
 {
     micron.start();
-    try
-    {
-        //Wait up to one second. This is needed because the
-        //motor of the sonar is powering down after a while
-        //and it needs some time to send HeadData again
-        micron.waitForPacket(sea_net::mtHeadData,1000);
+    bool micronRunning = false;
+    for(int i=0;i< 10;i++){
+        try
+        {
+            //Wait up to one second. This is needed because the
+            //motor of the sonar is powering down after a while
+            //and it needs some time to send HeadData again
+            micron.waitForPacket(sea_net::mtHeadData,1000);
+        }
+        catch(std::runtime_error e)
+        {
+            std::cerr << "Cannot start the device!" << std::endl;
+            std::cerr << e.what() << std::endl;
+            continue;
+        }
+        micronRunning = true;
+        std::cout << "Micron Started successfull" << std::endl;
+        break;
     }
-    catch(std::runtime_error e)
-    {
-        std::cerr << "Cannot start the device!" << std::endl;
-        std::cerr << e.what() << std::endl;
-        return false;
-    }
-
+    
     time_out_echo_sounder = new iodrivers_base::Timeout(_echo_sounder_timeout.get()*1000);
-    return true;
+    return micronRunning;
 }
 
 void Micron::updateHook()
