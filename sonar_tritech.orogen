@@ -31,6 +31,19 @@ task_context "Micron" do
     # It is required to have a special timeout there as it takes longer for the
     # sonar to start spinning its motor
     property('configure_timeout', 'double', 10.0)
+    # The timeout for receiving head data
+    #
+    # The Micron is a request/receive device. I.e. this component must send a
+    # request to acquire data, and receives it. While a request is "in flight",
+    # one should not re-request data.
+    #
+    # This parameter tells the component at which point it should assume that it
+    # won't receive the head data it is expecting, and should re-request a new
+    # acquisition. This is used to account for e.g. errors on the communication
+    # line.
+    #
+    # It defaults to one second
+    property('acquisition_timeout', '/base/Time')
 
     # The sonar readings
     output_port("sonar_beam","base::samples::SonarBeam")

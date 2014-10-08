@@ -54,6 +54,11 @@ bool Micron::startHook()
     timeoutEchoSounder =
         iodrivers_base::Timeout(_echo_sounder_timeout.get()*1000);
 
+    base::Time acquisitionTimeout = _acquisition_timeout.get();
+    hasAcquisitionTimeout = !acquisitionTimeout.isNull();
+    timeoutAcquisition =
+        iodrivers_base::Timeout(acquisitionTimeout.toMilliseconds());
+
     // Start pulling
     micron.requestData();
     return MicronBase::startHook();
@@ -68,10 +73,16 @@ void Micron::processIO()
         micron.decodeSonarBeam(sonar_beam);
         _sonar_beam.write(sonar_beam);
         micron.requestData();
+        timeoutAcquisition.restart();
     }
     else if (packet_type == sea_net::mtAuxData)
     {
         processEchoSounderPacket();
+    }
+    else if (hasAcquisitionTimeout && timeoutAcquisition.elapsed())
+    {
+        micron.requestData();
+        timeoutAcquisition.restart();
     }
 
     if (hasEchoSounderTimeout && timeoutEchoSounder.elapsed())

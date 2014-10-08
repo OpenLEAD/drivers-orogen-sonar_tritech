@@ -88,6 +88,8 @@ namespace sonar_tritech
         sea_net::Micron micron;
         bool hasEchoSounderTimeout;
         iodrivers_base::Timeout timeoutEchoSounder;
+        bool hasAcquisitionTimeout;
+        iodrivers_base::Timeout timeoutAcquisition;
 
     };
 }
