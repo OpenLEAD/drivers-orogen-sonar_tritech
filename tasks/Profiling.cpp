@@ -33,17 +33,29 @@ bool Profiling::configureHook()
         profiling.openSerial(_port.value(), _baudrate.value());
     else if (!_io_port.value().empty())
         profiling.openURI(_io_port);
+    setDriver(&profiling);
+    if (!ProfilingBase::configureHook())
+        return false;
 
     profiling.configure(_config.get(), _configure_timeout.get()*1000);
-    setDriver(&profiling);
-    return ProfilingBase::configureHook();
+    return true;
 }
 
 bool Profiling::startHook()
 {
     // Do one ping to verify that the sonar is operational
+    //
+    // Wait up to one second. This is needed because the
+    // motor of the sonar is powering down after a while
+    // and it needs some time to send HeadData again
     profiling.requestData();
     profiling.receiveData(1000);
+
+    base::Time acquisitionTimeout = _acquisition_timeout.get();
+    hasAcquisitionTimeout = !acquisitionTimeout.isNull();
+    timeoutAcquisition =
+        iodrivers_base::Timeout(acquisitionTimeout.toMilliseconds());
+
     // And start pulling
     profiling.requestData();
     return ProfilingBase::startHook();
@@ -57,6 +69,12 @@ void Profiling::processIO()
         profiling.decodeScan(laser_scan);
         _profiling_scan.write(laser_scan);
         profiling.requestData();
+        timeoutAcquisition.restart();
+    }
+    if (hasAcquisitionTimeout && timeoutAcquisition.elapsed())
+    {
+        profiling.requestData();
+        timeoutAcquisition.restart();
     }
 }
 void Profiling::stopHook()

@@ -5,7 +5,7 @@
 
 #include "sonar_tritech/ProfilingBase.hpp"
 #include <sonar_tritech/SeaNetProfiling.hpp>
-
+#include <iodrivers_base/Timeout.hpp>
 
 namespace sonar_tritech {
     class Profiling : public ProfilingBase
@@ -63,6 +63,10 @@ namespace sonar_tritech {
          * before calling start() again.
          */
         // void cleanupHook();
+
+    private:
+        bool hasAcquisitionTimeout;
+        iodrivers_base::Timeout timeoutAcquisition;
     };
 }
 
