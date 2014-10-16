@@ -78,6 +78,7 @@ void Micron::processIO()
     else if (packet_type == sea_net::mtAuxData)
     {
         processEchoSounderPacket();
+        timeoutEchoSounder.restart();
     }
     else if (hasAcquisitionTimeout && timeoutAcquisition.elapsed())
     {
@@ -95,7 +96,6 @@ void Micron::processEchoSounderPacket()
     micron.decodeEchoSounder(state);
     state.sourceFrame = _ground_frame.get();
     _ground_distance.write(state);
-    timeoutEchoSounder.restart();
 }
 
 void Micron::updateHook()
