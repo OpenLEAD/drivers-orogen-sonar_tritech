@@ -49,7 +49,7 @@ bool Profiling::startHook()
     // motor of the sonar is powering down after a while
     // and it needs some time to send HeadData again
     profiling.requestData();
-    profiling.receiveData(1000);
+    profiling.receiveData(_configure_timeout.get()*1000);
 
     base::Time acquisitionTimeout = _acquisition_timeout.get();
     hasAcquisitionTimeout = !acquisitionTimeout.isNull();
