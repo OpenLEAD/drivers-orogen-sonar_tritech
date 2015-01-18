@@ -10,12 +10,22 @@ Profiling::Profiling(std::string const& name)
 {
 }
 
+void Profiling::pushProfile()
+{
+    laser_scan.ranges.clear();
+    profiling.decodeScan(laser_scan);
+    _profiling_scan.write(laser_scan);
+    timeoutAcquisition.restart();
+}
 
 bool Profiling::setAcquisition_config(::sea_net::ProfilingAcquisitionConfig const & value)
 {
     // Need to read the pending data packet first
     if (profiling.hasPendingData())
+    {
         profiling.receiveData(_io_read_timeout.get().toMilliseconds());
+        pushProfile();
+    }
 
     profiling.configureAcquisition(value, _configure_timeout.get()*1000);
     profiling.requestData();
@@ -50,6 +60,7 @@ bool Profiling::startHook()
     // and it needs some time to send HeadData again
     profiling.requestData();
     profiling.receiveData(_configure_timeout.get()*1000);
+    pushProfile();
 
     base::Time acquisitionTimeout = _acquisition_timeout.get();
     hasAcquisitionTimeout = !acquisitionTimeout.isNull();
@@ -65,11 +76,8 @@ void Profiling::processIO()
     sea_net::PacketType packet_type = profiling.readPacket(_io_read_timeout.get().toMilliseconds());
     if (packet_type == sea_net::mtHeadData)
     {
-        laser_scan.ranges.clear();
-        profiling.decodeScan(laser_scan);
-        _profiling_scan.write(laser_scan);
+        pushProfile();
         profiling.requestData();
-        timeoutAcquisition.restart();
     }
     if (hasAcquisitionTimeout && timeoutAcquisition.elapsed())
     {

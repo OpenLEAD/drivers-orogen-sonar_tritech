@@ -18,6 +18,14 @@ namespace sonar_tritech {
          */
         virtual bool setAcquisition_config(::sea_net::ProfilingAcquisitionConfig const & value);
 
+        /** Push the last received scan out of the driver onto the laser scan
+         * port
+         *
+         * It assumes that the driver just received a scan (i.e. this is usually
+         * called just after receiveData()
+         */
+        void pushProfile();
+        
     public:
         Profiling(std::string const& name = "sonar_tritech::Profiling");
 
