@@ -16,7 +16,7 @@ namespace sonar_tritech {
         
         /* Dynamic Property setter of config
          */
-        virtual bool setConfig(::sea_net::ProfilingConfig const & value);
+        virtual bool setAcquisitionConfig(::sea_net::ProfilingAcquisitionConfig const & value);
         
     public:
         Profiling(std::string const& name = "sonar_tritech::Profiling");
