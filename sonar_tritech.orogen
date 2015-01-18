@@ -97,7 +97,7 @@ task_context "Profiling" do
         dynamic
 
     # The received sonar data
-    output_port("profiling_scan", "base::samples::LaserScan")
+    output_port "profiling_scan", "base::samples::LaserScan"
 	
     # The device's serial port (i.e. /dev/ttyS1)
     #
