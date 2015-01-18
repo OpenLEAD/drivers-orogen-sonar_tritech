@@ -85,8 +85,15 @@ task_context "Profiling" do
     needs_configuration
     subclasses "iodrivers_base::Task"
 
-    # The sonar configuration
-    property("config", "sea_net::ProfilingConfig").
+    # The sonar's main configuration
+    #
+    # Changing this configuration is very costly, this is why it is not dynamic
+    property "config", "sea_net::ProfilingConfig"
+
+    # The sonar acquisition configuration
+    #
+    # Changing these parameters is cheap and can be done while running
+    property("acquisition_config", "sea_net::ProfilingAcquisitionConfig").
         dynamic
 
     # The received sonar data

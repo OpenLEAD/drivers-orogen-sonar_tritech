@@ -11,16 +11,15 @@ Profiling::Profiling(std::string const& name)
 }
 
 
-bool Profiling::setConfig(::sea_net::ProfilingConfig const & value)
+bool Profiling::setAcquisition_config(::sea_net::ProfilingAcquisitionConfig const & value)
 {
     // Need to read the pending data packet first
     if (profiling.hasPendingData())
         profiling.receiveData(_io_read_timeout.get().toMilliseconds());
 
-    profiling.configure(value, _configure_timeout.get()*1000);
-
-    //Call the base function, DO-NOT Remove
-    return(ProfilingBase::setConfig(value));
+    profiling.configureAcquisition(value, _configure_timeout.get()*1000);
+    profiling.requestData();
+    return ProfilingBase::setAcquisition_config(value);
 }
 
 /// The following lines are template definitions for the various state machine
@@ -38,6 +37,7 @@ bool Profiling::configureHook()
         return false;
 
     profiling.configure(_config.get(), _configure_timeout.get()*1000);
+    profiling.configureAcquisition(_acquisition_config.get(), _configure_timeout.get()*1000);
     return true;
 }
 
