@@ -22,6 +22,8 @@ bool Micron::setConfig(::sea_net::MicronConfig const & value)
 
 bool Micron::configureHook()
 {
+    micron.clear();
+
     if (!_port.value().empty())
         micron.openSerial(_port.value(), _baudrate.value());
     else if (!_io_port.value().empty())

@@ -38,6 +38,8 @@ bool Profiling::setAcquisition_config(::sea_net::ProfilingAcquisitionConfig cons
 
 bool Profiling::configureHook()
 {
+    profiling.clear();
+
     if (!_port.value().empty())
         profiling.openSerial(_port.value(), _baudrate.value());
     else if (!_io_port.value().empty())
